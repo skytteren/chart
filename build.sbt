@@ -29,10 +29,13 @@ lazy val chart = crossProject
 lazy val chartJvm = chart.jvm
 lazy val chartJs = chart.js
 
+lazy val server = project
+  .dependsOn(chartJvm)
+
 lazy val root = project
   .in(file("."))
   .settings(commonSettings :_*)
-  .aggregate(chartJvm, chartJs)
+  .aggregate(chartJvm, chartJs, server)
   .enablePlugins(ScalaJSPlugin)
   .settings(
     name := "chart_root",

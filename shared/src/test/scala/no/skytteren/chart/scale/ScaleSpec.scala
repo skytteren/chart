@@ -229,4 +229,63 @@ class ScaleSpec extends FunSpec{
 
   }
 
+  describe("scaleOrdinal color"){
+
+
+    val scale = Ordinal(
+      0 to 100,
+      GraphRange(Color(0, 0, 0), Color(255, 255, 255))
+    )
+    it("should scale") {
+
+      assert(scale(0) === Color(0, 0, 0), "0")
+      assert(scale(50) === Color.grey(126), "0")
+      assert(scale(100) === Color.grey(252), "100")
+
+    }
+
+
+    it("should invert") {
+
+      def s(c: Color) = scale.inverse(c).get
+
+      assert(s(Color(0, 0, 0)) === 0, "Color(0, 0, 0)")
+      assert(s(Color.grey(127)) === 50, "Color(100, 100, 100)")
+      assert(s(Color(254, 254, 254)) === 100, "Color(100, 100, 100)")
+
+
+    }
+
+  }
+
+  describe("scaleOrdinal graph with spacing"){
+
+
+    val scale = Ordinal(
+      1 to 100,
+      GraphRange(0, 2000),
+      0.25
+    )
+    it("should scale") {
+
+      assert(scale(1) === 5, "0")
+      assert(scale(50) === 985, "50")
+      assert(scale(100) === 1985, "100")
+
+    }
+
+
+    it("should invert") {
+
+      def s(d: Int) = scale.inverse(d).get
+
+      assert(s(5) === 0, "5")
+      assert(s(995) === 50, "995")
+      assert(s(1985) === 100, "1985")
+
+
+    }
+
+  }
+
 }

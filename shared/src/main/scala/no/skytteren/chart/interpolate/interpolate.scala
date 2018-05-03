@@ -1,6 +1,6 @@
 package no.skytteren.chart.interpolate
 
-import no.skytteren.chart.{DomainData, NumberData, TimeData}
+import no.skytteren.chart.{NumberData}
 import no.skytteren.chart.scale.{Color, GraphRange}
 
 trait Interpolater[N]{
@@ -9,6 +9,8 @@ trait Interpolater[N]{
   def unapply(value: N): Option[Double]
 
   def clamp(value: N): N
+
+  def span: Option[Double]
 }
 
 object Interpolater{
@@ -32,6 +34,8 @@ case class InterpolateNumber[N: NumberData](range: GraphRange[N]) extends Interp
   override def unapply(value: N): Option[Double] = Some((numeric(value) - numeric(range.start)) / (numeric(range.end) - numeric(range.start)))
 
   override def clamp(value: N): N = numeric.reverse(math.min(math.max(numeric(range.start), numeric(value)), numeric(range.end)))
+
+  def span = Some(numeric(range.end) - numeric(range.start))
 }
 
 case class InterpolateRound[N: NumberData](range: GraphRange[N]) extends Interpolater[N]{
@@ -39,6 +43,8 @@ case class InterpolateRound[N: NumberData](range: GraphRange[N]) extends Interpo
   def apply(value: Double): N = {
     numeric.reverse((numeric(range.start) * (1 - value) + numeric(range.end) * value).round)
   }
+
+  def span = Some(numeric(range.end) - numeric(range.start))
 
   override def unapply(value: N): Option[Double] = Some((numeric(value) - numeric(range.start)) / (numeric(range.end) - numeric(range.start)))
 
@@ -60,6 +66,11 @@ case class InterpolateColor(range: GraphRange[Color]) extends Interpolater[Color
     (rc + gc + bc) / 3
   }
 
-  override def clamp(value: Color): Color = ???
+  override def clamp(c: Color): Color = Color(
+    r.clamp(c.r),
+    g.clamp(c.g),
+    b.clamp(c.b)
+  )
 
+  override def span: Option[Double] = None
 }

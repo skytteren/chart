@@ -16,6 +16,92 @@ trait Chart {
   import bundle.{svgTags => <}
   import bundle.{svgAttrs => ^}
 
+  def line[D: LineChartInfo](data: D, width: Int, height: Int) = {
+    object margin{
+      val top = 20
+      val right = 30
+      val bottom = 30
+      val left = 40
+    }
+
+    val info = implicitly[LineChartInfo[D]].list(data)
+
+    val points = info.flatMap(_._2)
+    val x = scale.Linear(Domain(points.map(_._1)), GraphRange(0, width))
+    val y = scale.Linear(Domain(points.map(_._2)), GraphRange(0, height))
+    val color = scale.Ordinal(info.map(_._1), GraphRange(Color(250, 25, 25), Color(55, 250, 50)))
+
+    <.svg(
+      ^.height := height + margin.top + margin.bottom,
+      ^.width := width + margin.left + margin.right,
+      <.g(
+        ^.transform := "translate(" + margin.left + "," + margin.top + ")",
+        Axis.yLeft(y, 10),
+        Axis.xBottom(x).apply(^.transform := s"translate(0,$height)"),
+        info.map { case (lineName, linePoints) =>
+          val c = color(lineName)
+          <.path(
+            ^.`class` := "line",
+            ^.d := linePoints
+              .map { case (k, v) => s"${x(k)},${height - y(v)}" }
+              .mkString("M", "L", ""),
+            ^.style := s"stroke: rgb(${c.r}, ${c.g}, ${c.b}); opacity: 1; fill: none"
+          )
+        },
+        info.map { case (lineName, linePoints) =>
+          val c = color(lineName)
+          linePoints.map { case (k, v) =>
+            <.circle(
+              ^.`class` := "circle",
+              ^.cx := x(k),
+              ^.cy := height - y(v),
+              ^.r := "2.5",
+              ^.style := s"fill: rgb(${c.r}, ${c.g}, ${c.b}); opacity: 1;"
+            )
+
+          }
+        }
+      )
+    )
+  }
+
+  def scatterPlot[D: PlotChartInfo](data: D, width: Int, height: Int) = {
+    object margin{
+      val top = 20
+      val right = 30
+      val bottom = 30
+      val left = 40
+    }
+
+    val info = implicitly[PlotChartInfo[D]].list(data)
+
+    val points = info.flatMap(_._2)
+    val x = scale.Linear(Domain(points.map(_._1)), GraphRange(0, width))
+    val y = scale.Linear(Domain(points.map(_._2)), GraphRange(0, height))
+    val color = scale.Ordinal(info.map(_._1), GraphRange(Color(50, 25, 25), Color(55, 250, 250)))
+    <.svg(
+      ^.height := height + margin.top + margin.bottom,
+      ^.width := width + margin.left + margin.right,
+      <.g(
+        ^.transform := "translate(" + margin.left + "," + margin.top + ")",
+        Axis.yLeft(y, 10),
+        Axis.xBottom(x).apply(^.transform := s"translate(0,$height)"),
+        info.map { case (lineName, classPoints) =>
+          val c = color(lineName)
+          classPoints.map { case (k, v) =>
+            <.circle(
+              ^.`class` := "circle",
+              ^.cx := x(k),
+              ^.cy := height - y(v),
+              ^.r := "2.5",
+              ^.style := s"fill: rgb(${c.r}, ${c.g}, ${c.b}); opacity: 1;"
+            )
+          }
+        }
+      )
+    )
+  }
+
   def barVertical[D: BarChartInfo](data: D, width: Int, height: Int) = {
     object margin{
       val top = 20
@@ -29,6 +115,7 @@ trait Chart {
     val x = scale.Ordinal(info.map(_._1), GraphRange(0, width), .1)
     val values = info.map(_._2)
     val y = scale.Linear(Domain(0, values.max), GraphRange(0, height))
+    val color = scale.Linear(Domain(0, values.max), GraphRange(Color(250, 25, 25), Color(55, 250, 50)))
 
     <.svg(
       ^.height := height + margin.top + margin.bottom,
@@ -39,12 +126,14 @@ trait Chart {
         Axis.xBottom(x).apply(^.transform := s"translate(0,$height)"),
         info.map{
           case (k, v) =>
+            val c = color(v)
             <.rect(
               ^.`class` := "bar",
+              ^.fill := s"rgb(${c.r}, ${c.g}, ${c.b})",
               ^.x := x(k),
               ^.y := height - y(v),
               ^.height := y(v),
-              ^.width := x.rangeBand
+              ^.width := x.rangeBand.getOrElse(0d)
             )
         }
       )
@@ -64,6 +153,7 @@ trait Chart {
     val values = info.map(_._2)
     val x = scale.Linear(Domain(0, values.max), GraphRange(0, width))
     val y = scale.Ordinal(info.map(_._1), GraphRange(0, height), .1)
+    val color = scale.Linear(Domain(0, values.max), GraphRange(Color(0, 25, 25), Color(255, 50, 50)))
 
     <.svg(
       ^.height := height + margin.top + margin.bottom,
@@ -74,11 +164,13 @@ trait Chart {
         Axis.xBottom(x).apply(^.transform := s"translate(0,$height)"),
         info.map{
           case (k, v) =>
+            val c = color(v)
             <.rect(
               ^.`class` := "bar",
+              ^.fill := s"rgb(${c.r}, ${c.g}, ${c.b})",
               ^.x := 0,
               ^.y := y(k),
-              ^.height := y.rangeBand,
+              ^.height := y.rangeBand.getOrElse(0d),
               ^.width := x(v)
             )
         }
@@ -137,13 +229,13 @@ trait Chart {
         <.path(
           ^.`class` := "domain",
           ^.stroke := "#000",
-          ^.d := s"M-6,${scale.span.ceil.toInt}.5H0.5V0.5H-6"
+          ^.d := s"M-6,${scale.span.getOrElse(0d).ceil.toInt}.5H0.5V0.5H-6"
         ),
         scale.elements.map(e => {
           <.g(
             ^.`class` := "tick",
             ^.opacity := "1",
-            ^.transform := s"translate(0,${(number(scale(e)) + scale.rangeBand / 2).toInt}.5)",
+            ^.transform := s"translate(0,${(number(scale(e)) + scale.rangeBand.getOrElse(0d) / 2).toInt}.5)",
             <.line(
               ^.stroke := "#000",
               ^.x2 := "-6"
@@ -169,13 +261,13 @@ trait Chart {
         <.path(
           ^.`class` := "domain",
           ^.stroke := "#000",
-          ^.d := s"M0.5,6V0.5H${scale.span.ceil.toInt}.5"
+          ^.d := s"M0.5,6V0.5H${scale.span.getOrElse(0d).ceil.toInt}.5"
         ),
         scale.elements.map(e => {
           <.g(
             ^.`class` := "tick",
             ^.opacity := "1",
-            ^.transform := s"translate(${number(scale(e)) + scale.rangeBand / 2},0)",
+            ^.transform := s"translate(${number(scale(e)) + scale.rangeBand.getOrElse(0d) / 2},0)",
             <.line(
               ^.stroke := "#000",
               ^.y2 := "6"

@@ -1,7 +1,7 @@
 package no.skytteren.chart.scale
 
 import no.skytteren.chart.interpolate.Interpolater
-import no.skytteren.chart.{DomainData, NumberData, TimeData}
+import no.skytteren.chart.{DomainData, GraphData, NumberData, TimeData}
 
 
 case class Domain[N: DomainData](start: N, end: N){
@@ -22,6 +22,9 @@ case class GraphRange[D](start: D, end: D){
   def span(implicit number: NumberData[D]): Double = number(end) - number(start)
 }
 case class Color(r: Int, g: Int, b: Int)
+object Color extends ((Int, Int, Int) => Color){
+  def grey(c: Int) = Color(c,c,c)
+}
 
 trait Scale[D, G]{
   def apply(t: D): G
@@ -57,32 +60,33 @@ trait Continuous[D, G] extends Scale[D, G]{
     val e2 = Math.sqrt(2)
 
     def tickIncrement(start: Double, stop: Double, count: Int): Double = {
-      val step: Double = (stop - start) / math.max(0, count)
+      val step: Double = (stop - start) / math.max(1, count)
       val power: Double = math.floor(math.log(step) / math.log(10))
       val error: Double = step / math.pow(10, power)
       val value = if (error >= e10) 10 else if (error >= e5) 5 else if (error >= e2) 2 else 1
 
+      println(s"step: $step, power: $power, error: $error, value: $value")
+
       if (power >= 0)
         value * math.pow(10, power)
       else
-        -math.pow(10, -power) / value
+        math.pow(10, -power) / value
     }
 
     if (start == stop && count > 0) {
       List(start)
     } else {
-      val step = if(stop < start) -tickIncrement(stop, start, count) else  tickIncrement(start, stop, count)
+      val step = if(stop < start) -tickIncrement(stop, start, count) else tickIncrement(start, stop, count)
       if (step == 0 || step.isInfinity) {
         Nil
       } else {
-
         if (step > 0) {
           val startInc = Math.floor(start / step) * count
           val stopInc = step * count + 1
           startInc.to(stopInc, step).toList
         } else {
-          val startInc = Math.ceil(-start / step) * count
-          val stopInc = Math.floor(-stop / step) * count
+          val startInc = Math.floor(-start / step) * count
+          val stopInc = step * count + 1
           startInc.to(stopInc, step).toList
         }
       }
@@ -155,23 +159,30 @@ case class Power[D, G](domain: Domain[D],
 case class Ordinal[D, G](elements: Seq[D],
                          range: GraphRange[G],
                          spacing: Double = 0.0,
-                         clamp: Boolean = false)(implicit interpolateFactory: Interpolater.Factory[G], number: DomainData[G], numeric: NumberData[G]) extends Scale[D, G]{
-  val interpolater = interpolateFactory(range)
+                         clamp: Boolean = false)(implicit interpolateFactory: Interpolater.Factory[G]) extends Scale[D, G]{
+  val interpolater: Interpolater[G] = interpolateFactory(range)
 
-  val span = range.span
+  val span = interpolater.span
+  println("span : " + span)
 
-  val rangeBand: Double = (span / elements.size * (1 - spacing * 2)).floor
+  val rangeBand: Option[Double] = span.map(s => (s / elements.size * (1 - spacing * 2)).floor)
 
-  def apply(t: D): G = number.reverse(
-    (
-      number(interpolater(elements.indexOf(t) / elements.size.toDouble)) + spacing * span
-        /
-      elements.size
-    ).ceil
-  )
+  def apply(t: D): G = {
+    val g = interpolater(elements.indexOf(t).toDouble / elements.size + spacing / elements.size)
+    if (clamp) interpolater.clamp(g) else g
+  }
   def bandWidth = span
 
-  def inverse(r: G): Option[D] = ???
+  def inverse(r: G): Option[D] = interpolater.unapply(r)
+    .map(d => (d - spacing) * elements.size )
+    .map(_.toInt)
+    .map(i => {
+      println(i)
+      println(elements.isDefinedAt(i))
+      i
+    })
+    .filter(elements.isDefinedAt)
+    .map(elements)
 
 }
 

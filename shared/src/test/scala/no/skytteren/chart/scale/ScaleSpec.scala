@@ -39,46 +39,33 @@ class ScaleSpec extends FunSpec{
       def s = Linear(Domain(0.0, 1.0), GraphRange(10.0, 20.0), clamp = true)
 
       assert(s(-1.0) === 10, "Clamp first")
-
       assert(s(0.0) === 10)
-
       assert(s(0.2) === 12)
-
       assert(s(0.5) === 15)
-
       assert(s(2) === 20, "Clamp last")
 
     }
     it("should scale upp") {
 
       def s = Linear(Domain(10.0, 20.0), GraphRange(10.0, 20.0))
-
       assert(s(10.0) === 10)
-
       assert(s(12) === 12)
-
       assert(s(15) === 15)
 
     }
     it("should scale down") {
 
       def s = Linear(Domain(10.0, 20.0), GraphRange(0.0, 10.0))
-
       assert(s(10.0) === 0)
-
       assert(s(12) === 2)
-
       assert(s(15) === 5)
 
     }
     it("should scale reverse") {
 
       def s = Linear(Domain(0.0, 10.0), GraphRange(10.0, 0.0))
-
       assert(s(10.0) === 0)
-
       assert(s(2) === 8)
-
       assert(s(5) === 5)
 
     }
@@ -131,6 +118,13 @@ class ScaleSpec extends FunSpec{
 
     }
 
+    it("should handle ticks"){
+      var ints = Log(Domain(1, 32), GraphRange(0d, 1d), base = 2)
+      assert(ints.ticks() === List(1, 2, 4, 8, 16, 32))
+      var e = Log(Domain(1.0, 32.0), GraphRange(0d, 1d), base = Math.E)
+      assert(e.ticks().map(_.toString).map(i => i.substring(0, math.min(i.length, 6))) === List("1.0", "2.7182", "7.3890", "20.085", "54.598"))
+    }
+
   }
 
   describe("scalePower"){
@@ -180,24 +174,17 @@ class ScaleSpec extends FunSpec{
 
       assert(s(LocalDate.of(2000, 1, 1)) === 0.0, "LocalDate.of(2000, 0, 1)")
       assert(s(LocalDate.of(2000, 1, 2)) === 0.5, "LocalDate.of(2000, 0, 2)")
-
-
     }
-
 
     it("should invert") {
 
       def s(d: Double) = scale.inverse(d).get
-
       assert(s(0.0) === LocalDate.of(2000, 1, 1), "LocalDate.of(2000, 0, 1)")
       assert(s(1.0) === LocalDate.of(2000, 1, 3), "LocalDate.of(2000, 0, 2)")
-
-
     }
 
   }
   describe("scaleTime dateTime"){
-
 
     val scale = Time(
       Domain(
@@ -206,25 +193,20 @@ class ScaleSpec extends FunSpec{
       ),
       GraphRange(0.0, 1.0)
     )
+
     it("should scale") {
 
       def s = scale
-
       assert(s(LocalDateTime.of(2000, 1, 1, 0, 0, 0)) === 0.0, "LocalDate.of(2000, 0, 1)")
       assert(s(LocalDateTime.of(2000, 1, 2, 0, 0, 0)) === 0.5, "LocalDate.of(2000, 0, 2)")
-
-
     }
 
 
     it("should invert") {
 
       def s(d: Double) = scale.inverse(d).get
-
       assert(s(0.0) === LocalDateTime.of(2000, 1, 1, 0, 0, 0), "LocalDate.of(2000, 0, 1)")
       assert(s(1.0) === LocalDateTime.of(2000, 1, 3, 0, 0, 0), "LocalDate.of(2000, 0, 2)")
-
-
     }
 
   }
@@ -252,8 +234,6 @@ class ScaleSpec extends FunSpec{
       assert(s(Color(0, 0, 0)) === 0, "Color(0, 0, 0)")
       assert(s(Color.grey(127)) === 50, "Color(100, 100, 100)")
       assert(s(Color(254, 254, 254)) === 100, "Color(100, 100, 100)")
-
-
     }
 
   }
@@ -279,10 +259,9 @@ class ScaleSpec extends FunSpec{
 
       def s(d: Int) = scale.inverse(d).get
 
-      assert(s(5) === 0, "5")
+      assert(s(5) === 1, "5")
       assert(s(995) === 50, "995")
       assert(s(1985) === 100, "1985")
-
 
     }
 

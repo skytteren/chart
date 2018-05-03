@@ -65,8 +65,6 @@ trait Continuous[D, G] extends Scale[D, G]{
       val error: Double = step / math.pow(10, power)
       val value = if (error >= e10) 10 else if (error >= e5) 5 else if (error >= e2) 2 else 1
 
-      println(s"step: $step, power: $power, error: $error, value: $value")
-
       if (power >= 0)
         value * math.pow(10, power)
       else
@@ -118,8 +116,8 @@ case class Linear[D, G](domain: Domain[D],
 case class Log[D, G](domain: Domain[D],
                         range: GraphRange[G],
                         clamp: Boolean = false,
-                        base: Int = 10
-                       )(implicit interpolateFactory: Interpolater.Factory[G], number: NumberData[G]) extends Continuous[D, G]{
+                        base: Double = 10
+                       )(implicit interpolateFactory: Interpolater.Factory[G]) extends Continuous[D, G]{
   val interpolater = interpolateFactory(range)
   private def log(v: Double) = math.log(v)/math.log(base)
   private def pow(v: Double) = math.pow(base, v)
@@ -130,14 +128,24 @@ case class Log[D, G](domain: Domain[D],
 
   override def inverse(g: G): Option[D] = interpolater.unapply(g).map(unweight)
 
-  override def ticks(count: Int = 10): List[D] = ticks(n(domain.start), n(domain.end), count).map(domain.n.reverse)
+  override def ticks(count: Int = 10): List[D] = {
+    val start = math.min(n(domain.start), n(domain.end))
+    val end = math.max(n(domain.start), n(domain.end))
+
+    val reversed: Boolean = n(domain.start) > n(domain.end)
+
+    val result = Stream.from(0, 1).map(i => pow(i)).dropWhile(_ / start < 1).takeWhile(_ / end < base).map(n.reverse).toList
+    if (reversed) result.reverse else result
+  }
+
+
 }
 
 case class Power[D, G](domain: Domain[D],
                        range: GraphRange[G],
                        clamp: Boolean = false,
                        exponent: Double = 1
-                       )(implicit interpolateFactory: Interpolater.Factory[G], number: NumberData[G]) extends Continuous[D, G]{
+                       )(implicit interpolateFactory: Interpolater.Factory[G]) extends Continuous[D, G]{
   val interpolater = interpolateFactory(range)
   private def pow(v: Double) = math.pow(v, exponent)
   private def log(v: Double) = math.pow(v, 1 / exponent)
@@ -163,7 +171,6 @@ case class Ordinal[D, G](elements: Seq[D],
   val interpolater: Interpolater[G] = interpolateFactory(range)
 
   val span = interpolater.span
-  println("span : " + span)
 
   val rangeBand: Option[Double] = span.map(s => (s / elements.size * (1 - spacing * 2)).floor)
 
@@ -174,13 +181,8 @@ case class Ordinal[D, G](elements: Seq[D],
   def bandWidth = span
 
   def inverse(r: G): Option[D] = interpolater.unapply(r)
-    .map(d => (d - spacing) * elements.size )
+    .map(d => d * elements.size )
     .map(_.toInt)
-    .map(i => {
-      println(i)
-      println(elements.isDefinedAt(i))
-      i
-    })
     .filter(elements.isDefinedAt)
     .map(elements)
 
@@ -191,7 +193,7 @@ case class Time[D, G](domain: Domain[D],
                                 range: GraphRange[G],
                                 spacing: Double = 0.0,
                                 clamp: Boolean = false
-                     )(implicit interpolateFactory: Interpolater.Factory[G], timeData: TimeData[D], number: DomainData[G]) extends Scale[D, G]{
+                     )(implicit interpolateFactory: Interpolater.Factory[G], number: DomainData[G]) extends Scale[D, G]{
   val interpolater = interpolateFactory(range)
   private val n = domain.n
   val domainSpan = n(domain.end) - n(domain.start)

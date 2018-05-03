@@ -9,42 +9,42 @@ import scala.util.Random
 
 object ChartView {
 
-  val data = List(
-    {"Locke"    ->  4},
-    {"Reyes"    ->  8},
-    {"Ford"     -> 15},
-    {"Jarrah"   -> 16},
-    {"Shephard" -> 23},
-    {"Kwon"     -> 42}
+  def data = List(
+    {"Locke"    -> math.random() * 100},
+    {"Reyes"    -> math.random() * 100},
+    {"Ford"     -> math.random() * 100},
+    {"Jarrah"   -> math.random() * 100},
+    {"Shephard" -> math.random() * 100},
+    {"Kwon"     -> math.random() * 100}
   )
 
-  val dataList = Seq(
+  def dataList = Seq(
     "A" ->  Seq(
-      1 -> 5,
-      2 -> 4,
-      3 -> 2,
-      4 -> 6,
-      5 -> 6,
-      6 -> 5,
-      7 -> 8,
+      1 -> math.random() * 5,
+      2 -> math.random() * 4,
+      3 -> math.random() * 2,
+      4 -> math.random() * 6,
+      5 -> math.random() * 6,
+      6 -> math.random() * 5,
+      7 -> math.random() * 8,
     ),
     "B" ->  Seq(
-      2 -> 5,
-      3 -> 4,
-      4 -> 2,
-      5 -> 1,
-      6 -> 6,
-      7 -> 5,
-      8 -> 8,
+      2 -> math.random() * 15,
+      3 -> math.random() * 14,
+      4 -> math.random() * 12,
+      5 -> math.random() * 11,
+      6 -> math.random() * 16,
+      7 -> math.random() * 15,
+      8 -> math.random() * 18,
     ),
     "C" ->  Seq(
-      1 -> 0,
-      3 -> 5,
-      4 -> 2,
-      5 -> 1,
-      6 -> 2,
-      7 -> 4,
-      8 -> 6,
+      1 -> (math.random() * 10 + 0),
+      3 -> (math.random() * 10 + 5),
+      4 -> (math.random() * 10 + 2),
+      5 -> (math.random() * 10 + 1),
+      6 -> (math.random() * 10 + 2),
+      7 -> (math.random() * 10 + 4),
+      8 -> (math.random() * 10 + 6),
     )
   )
 
@@ -114,7 +114,7 @@ object ChartView {
       <.g(
         ^.transform := "translate(" + margin.left + "," + margin.top + ")",
         Charts.Axis.yLeft(y),
-        Charts.Axis.xBottom(x, 3).apply(^.transform := s"translate(0,$height)"),
+        Charts.Axis.xBottom(x, 10).apply(^.transform := s"translate(0,$height)"),
         info.map{
           case (k, v) =>
             <.rect(

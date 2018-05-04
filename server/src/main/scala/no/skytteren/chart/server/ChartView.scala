@@ -1,6 +1,6 @@
 package no.skytteren.chart.server
 
-import no.skytteren.chart.scale.{Domain, GraphRange}
+import no.skytteren.chart.scale.{InputRange, OutputRange}
 import no.skytteren.chart.{BarChartInfo, Charts, scale}
 import scalatags.Text.all._
 import scalatags.Text.tags2
@@ -105,8 +105,8 @@ object ChartView {
     val info = implicitly[BarChartInfo[D]].list(data)
 
     val values = info.map(_._2)
-    val x = scale.Log(Domain(1, values.max), GraphRange(0, width))
-    val y = scale.Ordinal(info.map(_._1), GraphRange(0, height), .1)
+    val x = scale.Log(InputRange(1, values.max), OutputRange(0, width))
+    val y = scale.Ordinal(info.map(_._1), OutputRange(0, height), .1)
 
     <.svg(
       ^.height := height + margin.top + margin.bottom,
@@ -141,8 +141,8 @@ object ChartView {
     val info = implicitly[BarChartInfo[D]].list(data)
 
     val values = info.map(_._2)
-    val x = scale.Power(Domain(0, values.max), GraphRange(0, width), exponent = 2)
-    val y = scale.Ordinal(info.map(_._1), GraphRange(0, height), .1)
+    val x = scale.Power(InputRange(0, values.max), OutputRange(0, width), exponent = 2)
+    val y = scale.Ordinal(info.map(_._1), OutputRange(0, height), .1)
 
     <.svg(
       ^.height := height + margin.top + margin.bottom,

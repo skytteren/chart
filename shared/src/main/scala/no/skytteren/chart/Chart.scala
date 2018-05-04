@@ -27,9 +27,9 @@ trait Chart {
     val info = implicitly[LineChartInfo[D]].list(data)
 
     val points = info.flatMap(_._2)
-    val x = scale.Linear(Domain(points.map(_._1)), GraphRange(0, width))
-    val y = scale.Linear(Domain(points.map(_._2)), GraphRange(0, height))
-    val color = scale.Ordinal(info.map(_._1), GraphRange(Color(250, 25, 25), Color(55, 250, 50)))
+    val x = scale.Linear(InputRange(points.map(_._1)), OutputRange(0, width))
+    val y = scale.Linear(InputRange(points.map(_._2)), OutputRange(0, height))
+    val color = scale.Ordinal(info.map(_._1), OutputRange(Color(250, 25, 25), Color(55, 250, 50)))
 
     <.svg(
       ^.height := height + margin.top + margin.bottom,
@@ -76,9 +76,9 @@ trait Chart {
     val info = implicitly[PlotChartInfo[D]].list(data)
 
     val points = info.flatMap(_._2)
-    val x = scale.Linear(Domain(points.map(_._1)), GraphRange(0, width))
-    val y = scale.Linear(Domain(points.map(_._2)), GraphRange(0, height))
-    val color = scale.Ordinal(info.map(_._1), GraphRange(Color(50, 25, 25), Color(55, 250, 250)))
+    val x = scale.Linear(InputRange(points.map(_._1)), OutputRange(0, width))
+    val y = scale.Linear(InputRange(points.map(_._2)), OutputRange(0, height))
+    val color = scale.Ordinal(info.map(_._1), OutputRange(Color(50, 25, 25), Color(55, 250, 250)))
     <.svg(
       ^.height := height + margin.top + margin.bottom,
       ^.width := width + margin.left + margin.right,
@@ -112,10 +112,10 @@ trait Chart {
 
     val info = implicitly[BarChartInfo[D]].list(data)
 
-    val x = scale.Ordinal(info.map(_._1), GraphRange(0, width), .1)
+    val x = scale.Ordinal(info.map(_._1), OutputRange(0, width), .1)
     val values = info.map(_._2)
-    val y = scale.Linear(Domain(0, values.max), GraphRange(0, height))
-    val color = scale.Linear(Domain(0, values.max), GraphRange(Color(250, 25, 25), Color(55, 250, 50)))
+    val y = scale.Linear(InputRange(0, values.max), OutputRange(0, height))
+    val color = scale.Linear(InputRange(0, values.max), OutputRange(Color(250, 25, 25), Color(55, 250, 50)))
 
     <.svg(
       ^.height := height + margin.top + margin.bottom,
@@ -151,9 +151,9 @@ trait Chart {
     val info = implicitly[BarChartInfo[D]].list(data)
 
     val values = info.map(_._2)
-    val x = scale.Linear(Domain(0, values.max), GraphRange(0, width))
-    val y = scale.Ordinal(info.map(_._1), GraphRange(0, height), .1)
-    val color = scale.Linear(Domain(0, values.max), GraphRange(Color(0, 25, 25), Color(255, 50, 50)))
+    val x = scale.Linear(InputRange(0, values.max), OutputRange(0, width))
+    val y = scale.Ordinal(info.map(_._1), OutputRange(0, height), .1)
+    val color = scale.Linear(InputRange(0, values.max), OutputRange(Color(0, 25, 25), Color(255, 50, 50)))
 
     <.svg(
       ^.height := height + margin.top + margin.bottom,
@@ -180,8 +180,8 @@ trait Chart {
 
   object Axis {
 
-    def yLeft[D:DomainData, G: NumberData](scale: Linear[D, G], count: Int = 10) = {
-      val number = implicitly[DomainData[G]]
+    def yLeft[D:InputData, G: NumberData](scale: Linear[D, G], count: Int = 10) = {
+      val number = implicitly[InputData[G]]
       val tickList: List[D] = scale.ticks(count)
       <.g(
         ^.`class` := "axis axis--y",
@@ -196,7 +196,7 @@ trait Chart {
           <.g(
             ^.`class` := "tick",
             ^.opacity := "1",
-            ^.transform := s"translate(0,${(number(scale.range.end) - number(scale(tick))).round.toInt}.5)",
+            ^.transform := s"translate(0,${(number(scale.outputRange.end) - number(scale(tick))).round.toInt}.5)",
             <.line(
               ^.stroke := "#000",
               ^.x2 := "-6"
@@ -220,8 +220,8 @@ trait Chart {
       )
     }
 
-    def yLeft[D, G: DomainData](scale: Ordinal[D, G]) = {
-      val number = implicitly[DomainData[G]]
+    def yLeft[D, G: InputData](scale: Ordinal[D, G]) = {
+      val number = implicitly[InputData[G]]
       <.g(
         ^.`class` := "axis axis--y",
         ^.fill := "none",
@@ -252,8 +252,8 @@ trait Chart {
       )
     }
 
-    def xBottom[D, G: DomainData](scale: Ordinal[D, G]) = {
-      val number = implicitly[DomainData[G]]
+    def xBottom[D, G: InputData](scale: Ordinal[D, G]) = {
+      val number = implicitly[InputData[G]]
       <.g(
         ^.`class` := "axis axis--x",
         ^.fill := "none",
@@ -290,9 +290,9 @@ trait Chart {
       )
     }
 
-    def xBottom[D, G: DomainData](scale: Continuous[D, G], count: Int = 10) = {
+    def xBottom[D, G: InputData](scale: Continuous[D, G], count: Int = 10) = {
       val tickList: List[D] = scale.ticks(count)
-      val number = implicitly[DomainData[G]]
+      val number = implicitly[InputData[G]]
       <.g(
         ^.`class` := "axis axis--x",
         ^.fill := "none",

@@ -1,7 +1,9 @@
 package no.skytteren.chart.interpolate
 
-import no.skytteren.chart.{NumberData}
-import no.skytteren.chart.scale.{Color, GraphRange}
+import java.time.{LocalDate, LocalDateTime, ZoneOffset}
+
+import no.skytteren.chart.NumberData
+import no.skytteren.chart.scale.{Color, OutputRange}
 
 trait Interpolater[N]{
   def apply(value: Double): N
@@ -16,16 +18,19 @@ trait Interpolater[N]{
 object Interpolater{
   type Value = Double
 
-  type Factory[N] = GraphRange[N] => Interpolater[N]
+  type Factory[N] = OutputRange[N] => Interpolater[N]
 
   implicit def numberFactory[N: NumberData]: Factory[N] = range => new InterpolateNumber[N](range)
   implicit def colorFactory: Factory[Color] = range => new InterpolateColor(range)
 
-  def number[N: NumberData](range: GraphRange[N]): Interpolater[N] = new InterpolateNumber[N](range)
-  def round[N: NumberData](range: GraphRange[N]): Interpolater[N] = new InterpolateRound[N](range)
+  def number[N: NumberData](range: OutputRange[N]): Interpolater[N] = new InterpolateNumber[N](range)
+  def round[N: NumberData](range: OutputRange[N]): Interpolater[N] = new InterpolateRound[N](range)
+  def color(range: OutputRange[Color]): Interpolater[Color] = new InterpolateColor(range)
+  def date(range: OutputRange[LocalDate]): Interpolater[LocalDate] = new InterpolateDate(range)
+  def dateTime(range: OutputRange[LocalDateTime]): Interpolater[LocalDateTime] = new InterpolateDateTime(range)
 }
 
-case class InterpolateNumber[N: NumberData](range: GraphRange[N]) extends Interpolater[N] {
+case class InterpolateNumber[N: NumberData](range: OutputRange[N]) extends Interpolater[N] {
   private val numeric = implicitly[NumberData[N]]
   def apply(value: Double): N = {
     numeric.reverse(numeric(range.start) * (1 - value) + numeric(range.end) * value)
@@ -38,7 +43,7 @@ case class InterpolateNumber[N: NumberData](range: GraphRange[N]) extends Interp
   def span = Some(numeric(range.end) - numeric(range.start))
 }
 
-case class InterpolateRound[N: NumberData](range: GraphRange[N]) extends Interpolater[N]{
+case class InterpolateRound[N: NumberData](range: OutputRange[N]) extends Interpolater[N]{
   private val numeric = implicitly[NumberData[N]]
   def apply(value: Double): N = {
     numeric.reverse((numeric(range.start) * (1 - value) + numeric(range.end) * value).round)
@@ -51,8 +56,9 @@ case class InterpolateRound[N: NumberData](range: GraphRange[N]) extends Interpo
   override def clamp(value: N): N = numeric.reverse(math.min(math.max(numeric(range.start), numeric(value)), numeric(range.end)))
 
 }
-case class InterpolateColor(range: GraphRange[Color]) extends Interpolater[Color]{
-  private def c(f: Color => Int) = Interpolater.round(GraphRange(f(range.start), f(range.end)))
+
+case class InterpolateColor(range: OutputRange[Color]) extends Interpolater[Color]{
+  private def c(f: Color => Int) = Interpolater.round(OutputRange(f(range.start), f(range.end)))
   val r = c(_.r)
   val g = c(_.g)
   val b = c(_.b)
@@ -73,4 +79,47 @@ case class InterpolateColor(range: GraphRange[Color]) extends Interpolater[Color
   )
 
   override def span: Option[Double] = None
+}
+
+case class InterpolateDate(range: OutputRange[LocalDate]) extends Interpolater[LocalDate]{
+
+  override def apply(value: Double): LocalDate = LocalDate.ofEpochDay((range.start.toEpochDay * (1 - value) + range.end.toEpochDay * value).toLong)
+
+  override def unapply(d: LocalDate): Option[Double] = span.map((d.toEpochDay - range.start.toEpochDay) / _)
+
+  override def clamp(d: LocalDate): LocalDate = {
+    if(d.isBefore(range.start)){
+      range.start
+    } else if (d.isAfter(range.end)) {
+      range.end
+    } else {
+      d
+    }
+  }
+
+  override def span: Option[Double] = Some(range.end.toEpochDay - range.start.toEpochDay)
+}
+
+
+case class InterpolateDateTime(range: OutputRange[LocalDateTime]) extends Interpolater[LocalDateTime]{
+
+  override def apply(value: Double): LocalDateTime = LocalDateTime.ofEpochSecond(
+    (range.start.toEpochSecond(ZoneOffset.UTC) * (1 - value) + range.end.toEpochSecond(ZoneOffset.UTC) * value).toLong,
+    0,
+    ZoneOffset.UTC
+  )
+
+  override def unapply(d: LocalDateTime): Option[Double] = span.map((d.toEpochSecond(ZoneOffset.UTC) - range.start.toEpochSecond(ZoneOffset.UTC)) / _)
+
+  override def clamp(d: LocalDateTime): LocalDateTime = {
+    if(d.isBefore(range.start)){
+      range.start
+    } else if (d.isAfter(range.end)) {
+      range.end
+    } else {
+      d
+    }
+  }
+
+  override def span: Option[Double] = Some(range.end.toEpochSecond(ZoneOffset.UTC) - range.start.toEpochSecond(ZoneOffset.UTC))
 }

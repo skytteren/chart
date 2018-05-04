@@ -10,7 +10,7 @@ class ScaleSpec extends FunSpec{
   describe("scaleLinear"){
     it("should scale") {
 
-      def s = Linear(Domain(0.0, 1.0), GraphRange(10.0, 20.0))
+      def s = Linear(InputRange(0.0, 1.0), OutputRange(10.0, 20.0))
 
       assert(s(-1.0) === 0)
       assert(s(0.0) === 10)
@@ -22,7 +22,7 @@ class ScaleSpec extends FunSpec{
 
     it("should invert") {
 
-      def scale = Linear(Domain(0.0, 1.0), GraphRange(10.0, 20.0))
+      def scale = Linear(InputRange(0.0, 1.0), OutputRange(10.0, 20.0))
 
       def s(d: Double): Double = scale.inverse(d).get
 
@@ -36,7 +36,7 @@ class ScaleSpec extends FunSpec{
 
     it("should clamp") {
 
-      def s = Linear(Domain(0.0, 1.0), GraphRange(10.0, 20.0), clamp = true)
+      def s = Linear(InputRange(0.0, 1.0), OutputRange(10.0, 20.0), clamp = true)
 
       assert(s(-1.0) === 10, "Clamp first")
       assert(s(0.0) === 10)
@@ -47,7 +47,7 @@ class ScaleSpec extends FunSpec{
     }
     it("should scale upp") {
 
-      def s = Linear(Domain(10.0, 20.0), GraphRange(10.0, 20.0))
+      def s = Linear(InputRange(10.0, 20.0), OutputRange(10.0, 20.0))
       assert(s(10.0) === 10)
       assert(s(12) === 12)
       assert(s(15) === 15)
@@ -55,7 +55,7 @@ class ScaleSpec extends FunSpec{
     }
     it("should scale down") {
 
-      def s = Linear(Domain(10.0, 20.0), GraphRange(0.0, 10.0))
+      def s = Linear(InputRange(10.0, 20.0), OutputRange(0.0, 10.0))
       assert(s(10.0) === 0)
       assert(s(12) === 2)
       assert(s(15) === 5)
@@ -63,7 +63,7 @@ class ScaleSpec extends FunSpec{
     }
     it("should scale reverse") {
 
-      def s = Linear(Domain(0.0, 10.0), GraphRange(10.0, 0.0))
+      def s = Linear(InputRange(0.0, 10.0), OutputRange(10.0, 0.0))
       assert(s(10.0) === 0)
       assert(s(2) === 8)
       assert(s(5) === 5)
@@ -76,7 +76,7 @@ class ScaleSpec extends FunSpec{
 
     it("should scale") {
 
-      def s = Log(Domain(1.0, 2.0), GraphRange(0.0, 1.0))
+      def s = Log(InputRange(1.0, 2.0), OutputRange(0.0, 1.0))
 
       assert(s(0.5) === -1.0000000, "0.5")
       assert(s(1.0) ===  0.0000000, "1.0")
@@ -88,7 +88,7 @@ class ScaleSpec extends FunSpec{
 
     it("should invert") {
 
-      def scale = Log(Domain(1.0, 2.0), GraphRange(0.0, 1.0))
+      def scale = Log(InputRange(1.0, 2.0), OutputRange(0.0, 1.0))
 
       def s(d: Double): Double = scale.inverse(d).get
 
@@ -103,14 +103,14 @@ class ScaleSpec extends FunSpec{
 
     it("should scale with long domain") {
 
-      def s = Log(Domain(1.0, 10.0), GraphRange(0.0, 1.0))
+      def s = Log(InputRange(1.0, 10.0), OutputRange(0.0, 1.0))
 
       assert(s(5) === (0.69897 +- 0.00001), "5")
     }
 
     it("should scale to color") {
 
-      def s = Linear(Domain(0.0, 1.0), GraphRange(Color(0, 0, 0), Color(255, 255, 255)))
+      def s = Linear(InputRange(0.0, 1.0), OutputRange(Color(0, 0, 0), Color(255, 255, 255)))
 
       assert(s(0) === Color(0, 0, 0))
       assert(s(0.5) === Color(128, 128, 128))
@@ -119,9 +119,9 @@ class ScaleSpec extends FunSpec{
     }
 
     it("should handle ticks"){
-      var ints = Log(Domain(1, 32), GraphRange(0d, 1d), base = 2)
+      val ints = Log(InputRange(1, 32), OutputRange(0d, 1d), base = 2)
       assert(ints.ticks() === List(1, 2, 4, 8, 16, 32))
-      var e = Log(Domain(1.0, 32.0), GraphRange(0d, 1d), base = Math.E)
+      val e = Log(InputRange(1.0, 32.0), OutputRange(0d, 1d), base = Math.E)
       assert(e.ticks().map(_.toString).map(i => i.substring(0, math.min(i.length, 6))) === List("1.0", "2.7182", "7.3890", "20.085", "54.598"))
     }
 
@@ -132,7 +132,7 @@ class ScaleSpec extends FunSpec{
 
     it("should scale") {
 
-      def s = Power(Domain(1.0, 2.0), GraphRange(0.0, 1.0))
+      def s = Power(InputRange(1.0, 2.0), OutputRange(0.0, 1.0))
 
       assert(s(0.5) === -0.5, "0.5")
       assert(s(1.0) === 0.0, "1.0")
@@ -141,9 +141,9 @@ class ScaleSpec extends FunSpec{
       assert(s(2.5) === 1.5, "2.5")
 
 
-      def s2 = Power(Domain(1.0, 0.0), GraphRange(0.0, 1.0))
+      def s2 = Power(InputRange(1.0, 0.0), OutputRange(0.0, 1.0))
       println("Power ticks " + s2.ticks())
-      def s3 = Power(Domain(100.0, -100.0), GraphRange(0.0, 1.0))
+      def s3 = Power(InputRange(100.0, -100.0), OutputRange(0.0, 1.0))
       println("Power ticks " + s3.ticks())
 
     }
@@ -151,7 +151,7 @@ class ScaleSpec extends FunSpec{
 
     it("should invert") {
 
-      def s(d: Double) = Power(Domain(1.0, 2.0), GraphRange(0.0, 1.0)).inverse(d).get
+      def s(d: Double) = Power(InputRange(1.0, 2.0), OutputRange(0.0, 1.0)).inverse(d).get
 
       assert(s( 0.0) === 1.0, "0.0")
       assert(s( 0.5) === 1.5, "0.5")
@@ -167,7 +167,7 @@ class ScaleSpec extends FunSpec{
   describe("scaleTime"){
 
 
-    val scale = Time(Domain(LocalDate.of(2000, 1, 1), LocalDate.of(2000, 1, 3)), GraphRange(0.0, 1.0))
+    val scale = Time(InputRange(LocalDate.of(2000, 1, 1), LocalDate.of(2000, 1, 3)), OutputRange(0.0, 1.0))
     it("should scale") {
 
       def s = scale
@@ -187,11 +187,11 @@ class ScaleSpec extends FunSpec{
   describe("scaleTime dateTime"){
 
     val scale = Time(
-      Domain(
+      InputRange(
         LocalDateTime.of(2000, 1, 1, 0, 0, 0),
         LocalDateTime.of(2000, 1, 3, 0, 0, 0)
       ),
-      GraphRange(0.0, 1.0)
+      OutputRange(0.0, 1.0)
     )
 
     it("should scale") {
@@ -216,7 +216,7 @@ class ScaleSpec extends FunSpec{
 
     val scale = Ordinal(
       0 to 100,
-      GraphRange(Color(0, 0, 0), Color(255, 255, 255))
+      OutputRange(Color(0, 0, 0), Color(255, 255, 255))
     )
     it("should scale") {
 
@@ -243,7 +243,7 @@ class ScaleSpec extends FunSpec{
 
     val scale = Ordinal(
       1 to 100,
-      GraphRange(0, 2000),
+      OutputRange(0, 2000),
       0.25
     )
     it("should scale") {

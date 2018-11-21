@@ -2,8 +2,6 @@ package no.skytteren.chart
 
 import java.time.{LocalDate, LocalDateTime, ZoneOffset}
 
-import no.skytteren.chart.scale.Color
-
 trait InputData[T]{
   def apply(t:T): Double
   def reverse(d: Double): T

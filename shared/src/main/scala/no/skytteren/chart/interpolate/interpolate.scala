@@ -2,8 +2,8 @@ package no.skytteren.chart.interpolate
 
 import java.time.{LocalDate, LocalDateTime, ZoneOffset}
 
-import no.skytteren.chart.NumberData
-import no.skytteren.chart.scale.{Color, OutputRange}
+import no.skytteren.chart.{Color, NumberData, RGB}
+import no.skytteren.chart.scale.OutputRange
 
 trait Interpolater[N]{
   def apply(value: Double): N
@@ -21,11 +21,11 @@ object Interpolater{
   type Factory[N] = OutputRange[N] => Interpolater[N]
 
   implicit def numberFactory[N: NumberData]: Factory[N] = range => new InterpolateNumber[N](range)
-  implicit def colorFactory: Factory[Color] = range => new InterpolateColor(range)
+  implicit def colorFactory: Factory[RGB] = range => new InterpolateColor(range)
 
   def number[N: NumberData](range: OutputRange[N]): Interpolater[N] = new InterpolateNumber[N](range)
   def round[N: NumberData](range: OutputRange[N]): Interpolater[N] = new InterpolateRound[N](range)
-  def color(range: OutputRange[Color]): Interpolater[Color] = new InterpolateColor(range)
+  def color(range: OutputRange[RGB]): Interpolater[RGB] = new InterpolateColor(range)
   def date(range: OutputRange[LocalDate]): Interpolater[LocalDate] = new InterpolateDate(range)
   def dateTime(range: OutputRange[LocalDateTime]): Interpolater[LocalDateTime] = new InterpolateDateTime(range)
 }
@@ -57,14 +57,14 @@ case class InterpolateRound[N: NumberData](range: OutputRange[N]) extends Interp
 
 }
 
-case class InterpolateColor(range: OutputRange[Color]) extends Interpolater[Color]{
+case class InterpolateColor(range: OutputRange[RGB]) extends Interpolater[RGB]{
   private def c(f: Color => Int) = Interpolater.round(OutputRange(f(range.start), f(range.end)))
   val r = c(_.r)
   val g = c(_.g)
   val b = c(_.b)
-  def apply(value: Double): Color = Color(r(value), g(value), b(value))
+  def apply(value: Double): RGB = Color(r(value), g(value), b(value))
 
-  override def unapply(c: Color): Option[Double] = for{
+  override def unapply(c: RGB): Option[Double] = for{
     rc <- r.unapply(c.r)
     gc <- g.unapply(c.g)
     bc <- b.unapply(c.b)
@@ -72,7 +72,7 @@ case class InterpolateColor(range: OutputRange[Color]) extends Interpolater[Colo
     (rc + gc + bc) / 3
   }
 
-  override def clamp(c: Color): Color = Color(
+  override def clamp(c: RGB): RGB = Color(
     r.clamp(c.r),
     g.clamp(c.g),
     b.clamp(c.b)

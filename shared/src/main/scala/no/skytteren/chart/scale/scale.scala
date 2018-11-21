@@ -21,10 +21,6 @@ object InputRange{
 case class OutputRange[D](start: D, end: D){
   def span(implicit number: NumberData[D]): Double = number(end) - number(start)
 }
-case class Color(r: Int, g: Int, b: Int)
-object Color extends ((Int, Int, Int) => Color){
-  def grey(c: Int) = Color(c,c,c)
-}
 
 trait Scale[D, G]{
   def apply(t: D): G

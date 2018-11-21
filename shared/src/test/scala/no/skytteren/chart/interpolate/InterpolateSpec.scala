@@ -2,7 +2,9 @@ package no.skytteren.chart.interpolate
 
 import java.time.{LocalDate, LocalDateTime}
 
-import no.skytteren.chart.scale.{Color, OutputRange}
+import no.skytteren.chart.scale.OutputRange
+import no.skytteren.chart.Color
+
 import org.scalatest.FunSpec
 import org.scalatest.Matchers._
 

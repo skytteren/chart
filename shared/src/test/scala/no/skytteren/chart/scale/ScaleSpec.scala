@@ -4,6 +4,7 @@ import java.time.{LocalDate, LocalDateTime}
 
 import org.scalatest._
 import org.scalatest.Matchers._
+import _root_.no.skytteren.chart.Color
 
 class ScaleSpec extends FunSpec{
 

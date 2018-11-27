@@ -1,8 +1,10 @@
 package no.skytteren.chart
 
-import no.skytteren.chart.scale._
-
+import no.skytteren.chart.interpolate.Interpolater.Factory
+import no.skytteren.chart.scale.{StartEndRange, _}
+import no.skytteren.chart.scheme.ColorScheme
 import scalatags.generic
+import scala.language.higherKinds
 
 trait Chart {
 
@@ -16,7 +18,9 @@ trait Chart {
   import bundle.{svgTags => <}
   import bundle.{svgAttrs => ^}
 
-  def line[D: LineChartInfo](data: D, width: Int, height: Int) = {
+  def line[D: LineChartInfo, OR[R] <: OutputRange[R]](
+     data: D, width: Int, height: Int, colors: OR[RGB] = OutputRange(ColorScheme.`400`)
+   )(implicit factory: Factory[RGB, OR]) = {
     object margin{
       val top = 20
       val right = 30
@@ -29,7 +33,7 @@ trait Chart {
     val points = info.flatMap(_._2)
     val x = scale.Linear(InputRange(points.map(_._1)), OutputRange(0, width))
     val y = scale.Linear(InputRange(points.map(_._2)), OutputRange(0, height))
-    val color = scale.Ordinal(info.map(_._1), OutputRange(Color(250, 25, 25), Color(55, 250, 50)))
+    val color = scale.Ordinal(info.map(_._1), colors)
 
     <.svg(
       ^.height := height + margin.top + margin.bottom,
@@ -65,7 +69,9 @@ trait Chart {
     )
   }
 
-  def scatterPlot[D: PlotChartInfo](data: D, width: Int, height: Int) = {
+  def scatterPlot[D: PlotChartInfo, OR[R] <: OutputRange[R]](
+       data: D, width: Int, height: Int, colors: OR[RGB] = OutputRange(ColorScheme.`400`)
+    )(implicit factory: Factory[RGB, OR]) = {
     object margin{
       val top = 20
       val right = 30
@@ -78,7 +84,7 @@ trait Chart {
     val points = info.flatMap(_._2)
     val x = scale.Linear(InputRange(points.map(_._1)), OutputRange(0, width))
     val y = scale.Linear(InputRange(points.map(_._2)), OutputRange(0, height))
-    val color = scale.Ordinal(info.map(_._1), OutputRange(Color(50, 25, 25), Color(55, 250, 250)))
+    val color = scale.Ordinal(info.map(_._1), colors)
     <.svg(
       ^.height := height + margin.top + margin.bottom,
       ^.width := width + margin.left + margin.right,
@@ -102,7 +108,9 @@ trait Chart {
     )
   }
 
-  def barVertical[D: BarChartInfo](data: D, width: Int, height: Int) = {
+  def barVertical[D: BarChartInfo, OR[R] <: OutputRange[R]](
+    data: D, width: Int, height: Int, colors: OR[RGB] = OutputRange(ColorScheme.`400`)
+  )(implicit factory: Factory[RGB, OR]) = {
     object margin{
       val top = 20
       val right = 30
@@ -115,7 +123,7 @@ trait Chart {
     val x = scale.Ordinal(info.map(_._1), OutputRange(0, width), .1)
     val values = info.map(_._2)
     val y = scale.Linear(InputRange(0, values.max), OutputRange(0, height))
-    val color = scale.Linear(InputRange(0, values.max), OutputRange(Color(250, 25, 25), Color(55, 250, 50)))
+    val color = scale.Ordinal(info.map(_._1), colors)
 
     <.svg(
       ^.height := height + margin.top + margin.bottom,
@@ -126,7 +134,7 @@ trait Chart {
         Axis.xBottom(x).apply(^.transform := s"translate(0,$height)"),
         info.map{
           case (k, v) =>
-            val c = color(v)
+            val c = color(k)
             <.rect(
               ^.`class` := "bar",
               ^.fill := s"rgb(${c.r}, ${c.g}, ${c.b})",
@@ -140,7 +148,57 @@ trait Chart {
     )
   }
 
-  def barHorizontal[D: BarChartInfo](data: D, width: Int, height: Int) = {
+  def barVerticalStacked[D: BarChartStackedInfo, OR[R] <: OutputRange[R]](
+     data: D, width: Int, height: Int, colors: OR[RGB] = OutputRange(ColorScheme.`400`)
+    )(implicit factory: Factory[RGB, OR]) = {
+    object margin{
+      val top = 20
+      val right = 30
+      val bottom = 30
+      val left = 40
+    }
+
+    val info = implicitly[BarChartStackedInfo[D]].list(data)
+
+    val x = scale.Ordinal(info.map(_._1), OutputRange(0, width), .1)
+    val maxValue: Double = info.map(_._2.map(_._2).sum).max
+    val colorId: Seq[String] = info.flatMap(_._2.map(_._1)).distinct
+    val y = scale.Linear(InputRange(0d, maxValue), OutputRange(0d, height))
+    val color = scale.Ordinal(colorId, colors)
+
+
+    <.svg(
+      ^.height := height + margin.top + margin.bottom,
+      ^.width := width + margin.left + margin.right,
+      <.g(
+        ^.transform := "translate(" + margin.left + "," + margin.top + ")",
+        Axis.yLeft(y, 10),
+        Axis.xBottom(x).apply(^.transform := s"translate(0,$height)"),
+        info.map{
+          case (k1, values) =>
+            values.foldLeft((0d, List[Frag]())){
+              case ((offset, elems), (k2, ve)) =>
+                val c = color(k2)
+
+                (
+                  offset + ve,
+                  <.rect(
+                    ^.`class` := "bar",
+                    ^.fill := s"rgb(${c.r}, ${c.g}, ${c.b})",
+                    ^.x := x(k1),
+                    ^.y := height - y(offset + ve),
+                    ^.height := y(ve),
+                    ^.width := x.rangeBand.getOrElse(0d)
+                  ) :: elems
+                )
+            }
+        }.flatMap(_._2)
+      )
+    )
+  }
+
+  def barHorizontal[D: BarChartInfo, OR[R] <: OutputRange[R]](data: D, width: Int, height: Int, colors: OR[RGB] = OutputRange(ColorScheme.`400`)
+                                                             )(implicit factory: Factory[RGB, OR]) = {
     object margin{
       val top = 20
       val right = 50
@@ -153,7 +211,7 @@ trait Chart {
     val values = info.map(_._2)
     val x = scale.Linear(InputRange(0, values.max), OutputRange(0, width))
     val y = scale.Ordinal(info.map(_._1), OutputRange(0, height), .1)
-    val color = scale.Linear(InputRange(0, values.max), OutputRange(Color(0, 25, 25), Color(255, 50, 50)))
+    val color = scale.Linear(InputRange(0, values.size), colors)
 
     <.svg(
       ^.height := height + margin.top + margin.bottom,
@@ -162,9 +220,9 @@ trait Chart {
         ^.transform := "translate(" + margin.left + "," + margin.top + ")",
         Axis.yLeft(y),
         Axis.xBottom(x).apply(^.transform := s"translate(0,$height)"),
-        info.map{
-          case (k, v) =>
-            val c = color(v)
+        info.zipWithIndex.map{
+          case ((k, v), i) =>
+            val c = color(i)
             <.rect(
               ^.`class` := "bar",
               ^.fill := s"rgb(${c.r}, ${c.g}, ${c.b})",
@@ -178,9 +236,81 @@ trait Chart {
     )
   }
 
+  def donutChart[D: PieChartInfo, OR[R] <: OutputRange[R]](data: D, width: Int, height: Int, colors: OR[RGB] = OutputRange(ColorScheme.`400`)
+                                 )(implicit factory: Factory[RGB, OR]) = {
+
+    val info = implicitly[PieChartInfo[D]].list(data)
+    val total = info.map(_._2).sum
+
+    val radius = 150
+    val outerRadius = radius + 50
+    val donutWidth = 40
+
+    val color = scale.Linear(InputRange(0, info.size), colors)
+
+    val preparedInfo: List[(String, Double, Double, Int)] = info.foldLeft((Nil: List[(String, Double, Double, Int)], 0)) {
+      case ((Nil, i), (label, size)) => List((label, 0d, size / total * radius * 2 * math.Pi, i)) -> (i + 1)
+      case ((list @ (_, hStart, hSize, _) :: _, i), (label, size)) => ((label, hStart + hSize, size / total * radius * 2 * math.Pi, i) :: list) -> (i + 1)
+    }._1.sortBy(_._1)
+
+    <.svg(
+      ^.width := width, ^.height := height, ^.viewBox := "0 0 500 500", cls := "donut",
+      <.g(
+        cls := "slices",
+        ^.transform := "translate(" + 100 + "," + 100 + ")",
+        <.circle(cls := "donut-hole", ^.cx := 150, ^.cy := 150, ^.r := radius, ^.fill := "#fff"),
+        <.circle(cls := "donut-ring", ^.cx := 150, ^.cy := 150, ^.r := radius, ^.fill := "transparent", ^.stroke :="#d2d3d4", ^.strokeWidth := donutWidth),
+        preparedInfo.map { case (label, start, size, i) =>
+          val c = color(i)
+          <.circle(
+            cls := "donut-segment", ^.cx := 150, ^.cy := 150, ^.r := radius, ^.fill := "transparent",
+            ^.stroke := s"rgb(${c.r}, ${c.g}, ${c.b})", ^.strokeWidth := donutWidth,
+            ^.strokeDasharray := s"$size ${radius * 2 * math.Pi - size}", ^.strokeDashoffset := -start,
+            label
+          )
+        }
+      ),
+      <.g(
+        cls := "labels",
+        preparedInfo.map { case (label, start, size, i) =>
+          val mid = (start + size / 2) / radius
+          val left = mid > math.Pi / 2 && mid <  3 * math.Pi / 2
+          <.g(
+            <.text(
+              ^.x := (250 + math.cos(mid) * outerRadius),
+              ^.y := (250 + math.sin(mid) * outerRadius),
+              ^.dy := "-0.32em",
+              ^.dx := (if(left) "-.32em" else ".32em"),
+              ^.textAnchor := (if(left) "end" else "start"),
+              label
+            ),
+            <.line(
+              ^.strokeLinecap := "round",
+              ^.x1 := (250 + math.cos(mid) * (donutWidth / 2 + radius)),
+              ^.y1 := (250 + math.sin(mid) * (donutWidth / 2 + radius)),
+              ^.x2 := (250 + math.cos(mid) * outerRadius),
+              ^.y2 := (250 + math.sin(mid) * outerRadius),
+              ^.stroke := "#222",
+              ^.strokeWidth := 2,
+            ),
+            <.line(
+              ^.strokeLinecap := "round",
+              ^.x1 := (250 + math.cos(mid) * outerRadius),
+              ^.y1 := (250 + math.sin(mid) * outerRadius),
+              ^.x2 := ((if(left) 200 else 300) + math.cos(mid) * outerRadius),
+              ^.y2 := (250 + math.sin(mid) * outerRadius),
+              ^.stroke := "#222",
+              ^.strokeWidth := 2,
+            )
+          )
+        }
+      )
+    )
+  }
+
   object Axis {
 
-    def yLeft[D:InputData, G: NumberData](scale: Linear[D, G], count: Int = 10) = {
+    def yLeft[D:InputData, G: NumberData](scale: Linear[D, G, StartEndRange], count: Int = 10) = {
       val number = implicitly[InputData[G]]
       val tickList: List[D] = scale.ticks(count)
       <.g(
@@ -190,7 +320,7 @@ trait Chart {
         <.path(
           ^.`class` := "domain",
           ^.stroke := "#000",
-          ^.d := s"M-6,${scale.span.ceil.toInt}.5H0.5V0.5H-6"
+          ^.d := s"M-6,${scale.outputRange.span.ceil.toInt}.5H0.5V0.5H-6"
         ),
         tickList.map(tick => {
           <.g(
@@ -220,7 +350,7 @@ trait Chart {
       )
     }
 
-    def yLeft[D, G: InputData](scale: Ordinal[D, G]) = {
+    def yLeft[D, G: InputData](scale: Ordinal[D, G, StartEndRange]) = {
       val number = implicitly[InputData[G]]
       <.g(
         ^.`class` := "axis axis--y",
@@ -252,7 +382,7 @@ trait Chart {
       )
     }
 
-    def xBottom[D, G: InputData](scale: Ordinal[D, G]) = {
+    def xBottom[D, G: InputData](scale: Ordinal[D, G, StartEndRange]) = {
       val number = implicitly[InputData[G]]
       <.g(
         ^.`class` := "axis axis--x",

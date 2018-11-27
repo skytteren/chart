@@ -2,7 +2,7 @@ package no.skytteren.chart.scale
 
 import no.skytteren.chart.interpolate.Interpolater
 import no.skytteren.chart.{InputData, NumberData}
-
+import scala.language.higherKinds
 
 case class InputRange[N: InputData](start: N, end: N){
   val n = implicitly[InputData[N]]
@@ -18,8 +18,22 @@ object InputRange{
     }
   }
 }
-case class OutputRange[D](start: D, end: D){
+
+sealed trait OutputRange[+D]{
+  //def span(implicit number: NumberData[D]): Double
+  //def start: D
+  //def end: D
+}
+case class StepsRange[D](steps: List[D]) extends OutputRange[D] {
+  require(steps.size >= 2, "Not enough steps in OutputRange, got " + steps)
+}
+case class StartEndRange[D](start: D, end: D) extends OutputRange[D]{
   def span(implicit number: NumberData[D]): Double = number(end) - number(start)
+}
+object OutputRange {
+  def apply[D](steps: List[D]) = new StepsRange[D](steps)
+  def apply[D](start: D, end: D) = new StartEndRange[D](start, end)
+  def apply[D](start: D, step1: D, step2: D, steps: D*) = new StepsRange[D](List(start, step1, step2) ++ steps.toList)
 }
 
 trait Scale[D, G]{
@@ -45,8 +59,6 @@ trait Continuous[D, G] extends Scale[D, G]{
     } else
       interpolater(weight(t))
   }
-
-  def span(implicit number: NumberData[G]): Double = outputRange.span
 
   def ticks(count: Int = 10): List[D]
 
@@ -93,13 +105,13 @@ trait Quantize
 trait Quantile
 trait Threshold
 
-case class Linear[D, G](inputRange: InputRange[D],
-                        outputRange: OutputRange[G],
+case class Linear[D, G, O[A] <: OutputRange[A]](inputRange: InputRange[D],
+                        outputRange: O[G],
                         clamp: Boolean = false,
-                               )(implicit interpolateFactory: Interpolater.Factory[G]) extends Continuous[D, G]{
+                               )(implicit interpolateFactory: Interpolater.Factory[G, O]) extends Continuous[D, G]{
   val interpolater = interpolateFactory(outputRange)
   private val n = inputRange.n
-  val domainSpan = n(inputRange.end) - n(inputRange.start)
+  val domainSpan: Double = n(inputRange.end) - n(inputRange.start)
   def weight(value: D): Double = (n(value) - n(inputRange.start)) / domainSpan
   def unweight(value: Double): D = n.reverse(value * domainSpan + n(inputRange.start))
 
@@ -109,11 +121,11 @@ case class Linear[D, G](inputRange: InputRange[D],
 }
 
 
-case class Log[D, G](inputRange: InputRange[D],
-                     outputRange: OutputRange[G],
+case class Log[D, G, O[A] <: OutputRange[A]](inputRange: InputRange[D],
+                     outputRange: O[G],
                      clamp: Boolean = false,
                      base: Double = 10
-                       )(implicit interpolateFactory: Interpolater.Factory[G]) extends Continuous[D, G]{
+                       )(implicit interpolateFactory: Interpolater.Factory[G, O]) extends Continuous[D, G]{
   val interpolater = interpolateFactory(outputRange)
   private def log(v: Double) = math.log(v)/math.log(base)
   private def pow(v: Double) = math.pow(base, v)
@@ -137,11 +149,11 @@ case class Log[D, G](inputRange: InputRange[D],
 
 }
 
-case class Power[D, G](inputRange: InputRange[D],
-                       outputRange: OutputRange[G],
+case class Power[D, G, O[A] <: OutputRange[A]](inputRange: InputRange[D],
+                       outputRange: O[G],
                        clamp: Boolean = false,
                        exponent: Double = 1
-                       )(implicit interpolateFactory: Interpolater.Factory[G]) extends Continuous[D, G]{
+                       )(implicit interpolateFactory: Interpolater.Factory[G, O]) extends Continuous[D, G]{
   val interpolater = interpolateFactory(outputRange)
   private def pow(v: Double) = math.pow(v, exponent)
   private def log(v: Double) = math.pow(v, 1 / exponent)
@@ -160,10 +172,10 @@ case class Power[D, G](inputRange: InputRange[D],
 }
 
 //trait Ordinal //(Band, Point)
-case class Ordinal[D, G](elements: Seq[D],
-                         range: OutputRange[G],
+case class Ordinal[D, G, O[A] <: OutputRange[A]](elements: Seq[D],
+                         range: O[G],
                          spacing: Double = 0.0,
-                         clamp: Boolean = false)(implicit interpolateFactory: Interpolater.Factory[G]) extends Scale[D, G]{
+                         clamp: Boolean = false)(implicit interpolateFactory: Interpolater.Factory[G, O]) extends Scale[D, G]{
   val interpolater: Interpolater[G] = interpolateFactory(range)
 
   val span = interpolater.span
@@ -186,10 +198,10 @@ case class Ordinal[D, G](elements: Seq[D],
 
 //trait Ordinal //(Band, Point)
 case class Time[D, G](domain: InputRange[D],
-                      range: OutputRange[G],
+                      range: StartEndRange[G],
                       spacing: Double = 0.0,
                       clamp: Boolean = false
-                     )(implicit interpolateFactory: Interpolater.Factory[G], number: InputData[G]) extends Scale[D, G]{
+                     )(implicit interpolateFactory: Interpolater.Factory[G, StartEndRange], number: InputData[G]) extends Scale[D, G]{
   val interpolater = interpolateFactory(range)
   private val n = domain.n
   val domainSpan = n(domain.end) - n(domain.start)

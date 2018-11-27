@@ -1,6 +1,7 @@
 package no.skytteren.chart.server
 
 import no.skytteren.chart.scale.{InputRange, OutputRange}
+import no.skytteren.chart.scheme.ColorScheme
 import no.skytteren.chart.{BarChartInfo, Charts, scale}
 import scalatags.Text.all._
 import scalatags.Text.tags2
@@ -15,6 +16,7 @@ object ChartView {
     {"Ford"     -> math.random() * 100},
     {"Jarrah"   -> math.random() * 100},
     {"Shephard" -> math.random() * 100},
+    {"Donk" -> math.random() * 100},
     {"Kwon"     -> math.random() * 100}
   )
 
@@ -45,6 +47,24 @@ object ChartView {
       6 -> (math.random() * 10 + 2),
       7 -> (math.random() * 10 + 4),
       8 -> (math.random() * 10 + 6),
+    ),
+    "D" ->  Seq(
+      1 -> (math.random() * 8 + 0),
+      3 -> (math.random() * 8 + 7),
+      4 -> (math.random() * 8 + 5),
+      5 -> (math.random() * 8 + 1),
+      6 -> (math.random() * 8 + 2),
+      7 -> (math.random() * 8 + 5),
+      8 -> (math.random() * 8 + 6),
+    ),
+    "E" ->  Seq(
+      1 -> (math.random() * 10 + 1),
+      3 -> (math.random() * 10 + 2),
+      4 -> (math.random() * 10 + 4),
+      5 -> (math.random() * 10 + 6),
+      6 -> (math.random() * 10 + 7),
+      7 -> (math.random() * 10 + 5),
+      8 -> (math.random() * 10 + 1),
     )
   )
 
@@ -89,6 +109,8 @@ object ChartView {
         Charts.barVertical(data, 500, 400),
         barHorizontalLog(data, 500, 400),
         barHorizontalPow(data, 500, 400),
+        Charts.donutChart(data, 500, 400, OutputRange(ColorScheme.`800`)),
+        Charts.barVerticalStacked(dataList, 500, 400),
       )
     )
 
@@ -107,6 +129,7 @@ object ChartView {
     val values = info.map(_._2)
     val x = scale.Log(InputRange(1, values.max), OutputRange(0, width))
     val y = scale.Ordinal(info.map(_._1), OutputRange(0, height), .1)
+    val color = scale.Ordinal(info.map(_._1), OutputRange(ColorScheme.`900`))
 
     <.svg(
       ^.height := height + margin.top + margin.bottom,
@@ -117,8 +140,10 @@ object ChartView {
         Charts.Axis.xBottom(x, 10).apply(^.transform := s"translate(0,$height)"),
         info.map{
           case (k, v) =>
+            val c = color(k)
             <.rect(
               ^.`class` := "bar",
+              ^.fill := s"rgb(${c.r}, ${c.g}, ${c.b})",
               ^.x := 0,
               ^.y := y(k),
               ^.height := y.rangeBand.getOrElse(0d),
@@ -143,6 +168,7 @@ object ChartView {
     val values = info.map(_._2)
     val x = scale.Power(InputRange(0, values.max), OutputRange(0, width), exponent = 2)
     val y = scale.Ordinal(info.map(_._1), OutputRange(0, height), .1)
+    val color = scale.Ordinal(info.map(_._1), OutputRange(ColorScheme.`600`))
 
     <.svg(
       ^.height := height + margin.top + margin.bottom,
@@ -153,8 +179,10 @@ object ChartView {
         Charts.Axis.xBottom(x, 5).apply(^.transform := s"translate(0,$height)"),
         info.map{
           case (k, v) =>
+            val c = color(k)
             <.rect(
               ^.`class` := "bar",
+              ^.fill := s"rgb(${c.r}, ${c.g}, ${c.b})",
               ^.x := 0,
               ^.y := y(k),
               ^.height := y.rangeBand.getOrElse(0d),

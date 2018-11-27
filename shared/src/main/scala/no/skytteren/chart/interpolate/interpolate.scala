@@ -2,8 +2,10 @@ package no.skytteren.chart.interpolate
 
 import java.time.{LocalDate, LocalDateTime, ZoneOffset}
 
+import no.skytteren.chart.interpolate.Interpolater.Factory
 import no.skytteren.chart.{Color, NumberData, RGB}
-import no.skytteren.chart.scale.OutputRange
+import no.skytteren.chart.scale.{OutputRange, StartEndRange, StepsRange}
+import scala.language.higherKinds
 
 trait Interpolater[N]{
   def apply(value: Double): N
@@ -18,19 +20,36 @@ trait Interpolater[N]{
 object Interpolater{
   type Value = Double
 
-  type Factory[N] = OutputRange[N] => Interpolater[N]
+  type Factory[N, O[A] <: OutputRange[A]] = O[N] => Interpolater[N]
 
-  implicit def numberFactory[N: NumberData]: Factory[N] = range => new InterpolateNumber[N](range)
-  implicit def colorFactory: Factory[RGB] = range => new InterpolateColor(range)
+  implicit def numberFactory[N: NumberData]: Factory[N, StartEndRange] = new InterpolateNumber[N](_)
+  implicit def colorFactory: Factory[RGB, StartEndRange] = new InterpolateColor(_)
+  implicit def stepsFactory[N](implicit factory: Factory[N, StartEndRange]): Factory[N, StepsRange] = new Stepsinterpolater[N](_)
 
-  def number[N: NumberData](range: OutputRange[N]): Interpolater[N] = new InterpolateNumber[N](range)
-  def round[N: NumberData](range: OutputRange[N]): Interpolater[N] = new InterpolateRound[N](range)
-  def color(range: OutputRange[RGB]): Interpolater[RGB] = new InterpolateColor(range)
-  def date(range: OutputRange[LocalDate]): Interpolater[LocalDate] = new InterpolateDate(range)
-  def dateTime(range: OutputRange[LocalDateTime]): Interpolater[LocalDateTime] = new InterpolateDateTime(range)
+  def number[N: NumberData](range: StartEndRange[N]): Interpolater[N] = new InterpolateNumber[N](range)
+  def round[N: NumberData](range: StartEndRange[N]): Interpolater[N] = new InterpolateRound[N](range)
+  def color(range: StartEndRange[RGB]): Interpolater[RGB] = new InterpolateColor(range)
+  def date(range: StartEndRange[LocalDate]): Interpolater[LocalDate] = new InterpolateDate(range)
+  def dateTime(range: StartEndRange[LocalDateTime]): Interpolater[LocalDateTime] = new InterpolateDateTime(range)
 }
 
-case class InterpolateNumber[N: NumberData](range: OutputRange[N]) extends Interpolater[N] {
+case class Stepsinterpolater[T](stepsRange: StepsRange[T])(implicit factory: Factory[T, StartEndRange]) extends Interpolater[T]{
+  val subranges = stepsRange.steps.sliding(2).map{case start :: end :: Nil => StartEndRange(start, end)}.map(factory).toList
+
+  override def apply(value: Double): T = {
+    val i: Int = math.min((value * subranges.size).toInt, subranges.size - 1)
+    val d: Double = (value * subranges.size) - i
+    subranges(i)(d)
+  }
+
+  override def unapply(value: T): Option[Double] = subranges.collectFirst{case s if s.unapply(value).exists(d => d >= 0d && d <= 1d) => s.unapply(value)}.flatten
+
+  override def clamp(value: T): T = ???
+
+  override def span: Option[Double] = Some(1)
+}
+
+case class InterpolateNumber[N: NumberData](range: StartEndRange[N]) extends Interpolater[N] {
   private val numeric = implicitly[NumberData[N]]
   def apply(value: Double): N = {
     numeric.reverse(numeric(range.start) * (1 - value) + numeric(range.end) * value)
@@ -43,7 +62,7 @@ case class InterpolateNumber[N: NumberData](range: OutputRange[N]) extends Inter
   def span = Some(numeric(range.end) - numeric(range.start))
 }
 
-case class InterpolateRound[N: NumberData](range: OutputRange[N]) extends Interpolater[N]{
+case class InterpolateRound[N: NumberData](range: StartEndRange[N]) extends Interpolater[N]{
   private val numeric = implicitly[NumberData[N]]
   def apply(value: Double): N = {
     numeric.reverse((numeric(range.start) * (1 - value) + numeric(range.end) * value).round)
@@ -57,7 +76,8 @@ case class InterpolateRound[N: NumberData](range: OutputRange[N]) extends Interp
 
 }
 
-case class InterpolateColor(range: OutputRange[RGB]) extends Interpolater[RGB]{
+//TODO FIX steps in outputrange
+case class InterpolateColor(range: StartEndRange[RGB]) extends Interpolater[RGB]{
   private def c(f: Color => Int) = Interpolater.round(OutputRange(f(range.start), f(range.end)))
   val r = c(_.r)
   val g = c(_.g)
@@ -81,7 +101,7 @@ case class InterpolateColor(range: OutputRange[RGB]) extends Interpolater[RGB]{
   override def span: Option[Double] = None
 }
 
-case class InterpolateDate(range: OutputRange[LocalDate]) extends Interpolater[LocalDate]{
+case class InterpolateDate(range: StartEndRange[LocalDate]) extends Interpolater[LocalDate]{
 
   override def apply(value: Double): LocalDate = LocalDate.ofEpochDay((range.start.toEpochDay * (1 - value) + range.end.toEpochDay * value).toLong)
 
@@ -101,7 +121,7 @@ case class InterpolateDate(range: OutputRange[LocalDate]) extends Interpolater[L
 }
 
 
-case class InterpolateDateTime(range: OutputRange[LocalDateTime]) extends Interpolater[LocalDateTime]{
+case class InterpolateDateTime(range: StartEndRange[LocalDateTime]) extends Interpolater[LocalDateTime]{
 
   override def apply(value: Double): LocalDateTime = LocalDateTime.ofEpochSecond(
     (range.start.toEpochSecond(ZoneOffset.UTC) * (1 - value) + range.end.toEpochSecond(ZoneOffset.UTC) * value).toLong,

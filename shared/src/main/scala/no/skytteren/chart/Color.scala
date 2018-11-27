@@ -11,7 +11,7 @@ case class RGB(r: Int, g: Int, b: Int) extends Color{
   override val a = 1
 }
 
-object Color extends{
+object Color {
 
   def rgba(r: Int, g: Int, b: Int, a: Double) = RGBA(r, g, b, a)
   def rgb(r: Int, g: Int, b: Int) = RGB(r, g, b)
@@ -22,7 +22,7 @@ object Color extends{
   def grey(c: Int) = Color(c,c,c, 1)
   def grey(c: Int, a: Double) = Color(c,c,c, a)
 
-  def hex(in: String): Color = {
+  def hex(in: String): RGB = {
       val Spliter = "(.{2})(.{2})(.{2})".r
       val Spliter(r, g, b) = in
       rgb(

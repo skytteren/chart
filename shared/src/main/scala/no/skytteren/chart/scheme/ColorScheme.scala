@@ -1,12 +1,14 @@
 package no.skytteren.chart.scheme
 
-import no.skytteren.chart.Color
+import no.skytteren.chart.RGB
 import no.skytteren.chart.Color._
 
 
 object ColorScheme {
 
-  case class MaterialScheme(`50`: Color, `100`: Color, `200`: Color, `300`: Color, `400`: Color, `500`: Color, `600`: Color, `700`: Color, `800`: Color, `900`: Color)
+  case class MaterialScheme(`50`: RGB, `100`: RGB, `200`: RGB, `300`: RGB, `400`: RGB, `500`: RGB, `600`: RGB, `700`: RGB, `800`: RGB, `900`: RGB){
+    val all = List(`50`, `100`, `200`, `300`, `400`, `500`, `600`, `700`, `800`, `900`)
+  }
 
   val red = MaterialScheme(
     hex("FFEBEE"), hex("FFCDD2"), hex("EF9A9A"), hex("E57373"), hex("EF5350"), hex("F44336"), hex("E53935"), hex("D32F2F"), hex("C62828"), hex("B71C1C")
@@ -79,15 +81,17 @@ object ColorScheme {
 
   val all = List(red, pink, purple, deepPurple, indigo, blue, lightBlue, cyan, teal, green, lightGreen, lightBlue, yellow, amber, orange, deepOrange, brown, grey, blueGrey)
 
-  val `50`: List[Color] = all.map(_.`50`)
-  val `100`: List[Color] = all.map(_.`100`)
-  val `200`: List[Color] = all.map(_.`200`)
-  val `300`: List[Color] = all.map(_.`300`)
-  val `400`: List[Color] = all.map(_.`400`)
-  val `500`: List[Color] = all.map(_.`500`)
-  val `600`: List[Color] = all.map(_.`600`)
-  val `700`: List[Color] = all.map(_.`700`)
-  val `800`: List[Color] = all.map(_.`800`)
-  val `900`: List[Color] = all.map(_.`900`)
+  val allColors = all.flatMap(_.all)
+
+  val `50`:  List[RGB] = all.map(_.`50`)
+  val `100`: List[RGB] = all.map(_.`100`)
+  val `200`: List[RGB] = all.map(_.`200`)
+  val `300`: List[RGB] = all.map(_.`300`)
+  val `400`: List[RGB] = all.map(_.`400`)
+  val `500`: List[RGB] = all.map(_.`500`)
+  val `600`: List[RGB] = all.map(_.`600`)
+  val `700`: List[RGB] = all.map(_.`700`)
+  val `800`: List[RGB] = all.map(_.`800`)
+  val `900`: List[RGB] = all.map(_.`900`)
 
 }

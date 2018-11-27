@@ -1,10 +1,10 @@
 
 import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 
-version := "0.1"
+enablePlugins(GitVersioning)
+enablePlugins(GitBranchPrompt)
 
 scalaVersion := "2.12.6"
-
 
 lazy val commonSettings: Seq[Def.Setting[_]] =
   Seq(

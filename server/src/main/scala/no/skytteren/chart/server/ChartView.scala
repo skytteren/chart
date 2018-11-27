@@ -105,6 +105,7 @@ object ChartView {
         Charts.scatterPlot(randomList, 500, 400),
         Charts.scatterPlot(dataList, 500, 400),
         Charts.line(dataList, 500, 400),
+        Charts.line(dataList.map{case (k, v) => k -> v.map{case (k2, v2) => (k2 * 1000000) -> (v2*100000)}}, 500, 400),
         Charts.barHorizontal(data, 500, 400),
         Charts.barVertical(data, 500, 400),
         barHorizontalLog(data, 500, 400),

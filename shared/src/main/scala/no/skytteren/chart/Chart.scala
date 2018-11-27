@@ -28,27 +28,32 @@ trait Chart {
       val left = 40
     }
 
+    object graphSize{
+      val height = 500 - margin.top - margin.bottom
+      val width = 500 - margin.left - margin.right
+    }
+
     val info = implicitly[LineChartInfo[D]].list(data)
 
     val points = info.flatMap(_._2)
-    val x = scale.Linear(InputRange(points.map(_._1)), OutputRange(0, width))
-    val y = scale.Linear(InputRange(points.map(_._2)), OutputRange(0, height))
+    val x = scale.Linear(InputRange(points.map(_._1)), OutputRange(0, graphSize.width))
+    val y = scale.Linear(InputRange(points.map(_._2)), OutputRange(0, graphSize.height))
     val color = scale.Ordinal(info.map(_._1), colors)
 
     <.svg(
-      ^.height := height + margin.top + margin.bottom,
-      ^.width := width + margin.left + margin.right,
+      ^.height := height,
+      ^.width := width,
       ^.viewBox := "0 0 500 500",
       <.g(
         ^.transform := "translate(" + margin.left + "," + margin.top + ")",
         Axis.yLeft(y, 10),
-        Axis.xBottom(x).apply(^.transform := s"translate(0,$height)"),
+        Axis.xBottom(x).apply(^.transform := s"translate(0,${graphSize.height})"),
         info.map { case (lineName, linePoints) =>
           val c = color(lineName)
           <.path(
             ^.`class` := "line",
             ^.d := linePoints
-              .map { case (k, v) => s"${x(k)},${height - y(v)}" }
+              .map { case (k, v) => s"${x(k)},${graphSize.height - y(v)}" }
               .mkString("M", "L", ""),
             ^.style := s"stroke: rgb(${c.r}, ${c.g}, ${c.b}); opacity: 1; fill: none"
           )
@@ -59,7 +64,7 @@ trait Chart {
             <.circle(
               ^.`class` := "circle",
               ^.cx := x(k),
-              ^.cy := height - y(v),
+              ^.cy := graphSize.height - y(v),
               ^.r := "2.5",
               ^.style := s"fill: rgb(${c.r}, ${c.g}, ${c.b}); opacity: 1;"
             )
@@ -80,27 +85,32 @@ trait Chart {
       val left = 40
     }
 
+    object graphSize{
+      val height = 500 - margin.top - margin.bottom
+      val width = 500 - margin.left - margin.right
+    }
+
     val info = implicitly[PlotChartInfo[D]].list(data)
 
     val points = info.flatMap(_._2)
-    val x = scale.Linear(InputRange(points.map(_._1)), OutputRange(0, width))
-    val y = scale.Linear(InputRange(points.map(_._2)), OutputRange(0, height))
+    val x = scale.Linear(InputRange(points.map(_._1)), OutputRange(0, graphSize.width))
+    val y = scale.Linear(InputRange(points.map(_._2)), OutputRange(0, graphSize.height))
     val color = scale.Ordinal(info.map(_._1), colors)
     <.svg(
-      ^.height := height + margin.top + margin.bottom,
-      ^.width := width + margin.left + margin.right,
+      ^.height := height,
+      ^.width := width,
       ^.viewBox := "0 0 500 500",
       <.g(
         ^.transform := "translate(" + margin.left + "," + margin.top + ")",
         Axis.yLeft(y, 10),
-        Axis.xBottom(x).apply(^.transform := s"translate(0,$height)"),
+        Axis.xBottom(x).apply(^.transform := s"translate(0,${graphSize.height})"),
         info.map { case (lineName, classPoints) =>
           val c = color(lineName)
           classPoints.map { case (k, v) =>
             <.circle(
               ^.`class` := "circle",
               ^.cx := x(k),
-              ^.cy := height - y(v),
+              ^.cy := graphSize.height - y(v),
               ^.r := "2.5",
               ^.style := s"fill: rgb(${c.r}, ${c.g}, ${c.b}); opacity: 1;"
             )
@@ -120,21 +130,26 @@ trait Chart {
       val left = 40
     }
 
+    object graphSize{
+      val height = 500 - margin.top - margin.bottom
+      val width = 500 - margin.left - margin.right
+    }
+
     val info = implicitly[BarChartInfo[D]].list(data)
 
-    val x = scale.Ordinal(info.map(_._1), OutputRange(0, width), .1)
     val values = info.map(_._2)
-    val y = scale.Linear(InputRange(0, values.max), OutputRange(0, height))
+    val x = scale.Ordinal(info.map(_._1), OutputRange(0, graphSize.width), .1)
+    val y = scale.Linear(InputRange(0, values.max), OutputRange(0, graphSize.height))
     val color = scale.Ordinal(info.map(_._1), colors)
 
     <.svg(
-      ^.height := height + margin.top + margin.bottom,
-      ^.width := width + margin.left + margin.right,
+      ^.height := height,
+      ^.width := width,
       ^.viewBox := "0 0 500 500",
       <.g(
         ^.transform := "translate(" + margin.left + "," + margin.top + ")",
         Axis.yLeft(y, 10),
-        Axis.xBottom(x).apply(^.transform := s"translate(0,$height)"),
+        Axis.xBottom(x).apply(^.transform := s"translate(0,${graphSize.height})"),
         info.map{
           case (k, v) =>
             val c = color(k)
@@ -142,7 +157,7 @@ trait Chart {
               ^.`class` := "bar",
               ^.fill := s"rgb(${c.r}, ${c.g}, ${c.b})",
               ^.x := x(k),
-              ^.y := height - y(v),
+              ^.y := graphSize.height - y(v),
               ^.height := y(v),
               ^.width := x.rangeBand.getOrElse(0d)
             )
@@ -160,24 +175,28 @@ trait Chart {
       val bottom = 30
       val left = 40
     }
+    object graphSize{
+      val height = 500 - margin.top - margin.bottom
+      val width = 500 - margin.left - margin.right
+    }
 
     val info = implicitly[BarChartStackedInfo[D]].list(data)
 
-    val x = scale.Ordinal(info.map(_._1), OutputRange(0, width), .1)
+    val x = scale.Ordinal(info.map(_._1), OutputRange(0, graphSize.width), .1)
     val maxValue: Double = info.map(_._2.map(_._2).sum).max
     val colorId: Seq[String] = info.flatMap(_._2.map(_._1)).distinct
-    val y = scale.Linear(InputRange(0d, maxValue), OutputRange(0d, height))
+    val y = scale.Linear(InputRange(0d, maxValue), OutputRange(0d, graphSize.height))
     val color = scale.Ordinal(colorId, colors)
 
 
     <.svg(
-      ^.height := height + margin.top + margin.bottom,
-      ^.width := width + margin.left + margin.right,
+      ^.height := height,
+      ^.width := width,
       ^.viewBox := "0 0 500 500",
       <.g(
         ^.transform := "translate(" + margin.left + "," + margin.top + ")",
         Axis.yLeft(y, 10),
-        Axis.xBottom(x).apply(^.transform := s"translate(0,$height)"),
+        Axis.xBottom(x).apply(^.transform := s"translate(0,${graphSize.height})"),
         info.map{
           case (k1, values) =>
             values.foldLeft((0d, List[Frag]())){
@@ -190,7 +209,7 @@ trait Chart {
                     ^.`class` := "bar",
                     ^.fill := s"rgb(${c.r}, ${c.g}, ${c.b})",
                     ^.x := x(k1),
-                    ^.y := height - y(offset + ve),
+                    ^.y := graphSize.height - y(offset + ve),
                     ^.height := y(ve),
                     ^.width := x.rangeBand.getOrElse(0d)
                   ) :: elems
@@ -210,24 +229,29 @@ trait Chart {
       val left = 80
     }
 
+    object graphSize{
+      val height = 500 - margin.top - margin.bottom
+      val width = 500 - margin.left - margin.right
+    }
+
     val info = implicitly[BarChartInfo[D]].list(data)
 
     val values = info.map(_._2)
-    val x = scale.Linear(InputRange(0, values.max), OutputRange(0, width))
-    val y = scale.Ordinal(info.map(_._1), OutputRange(0, height), .1)
-    val color = scale.Linear(InputRange(0, values.size), colors)
+    val x = scale.Linear(InputRange(0, values.max), OutputRange(0, graphSize.width))
+    val y = scale.Ordinal(info.map(_._1), OutputRange(0, graphSize.height), .1)
+    val color = scale.Ordinal(info.map(_._1), colors)
 
     <.svg(
-      ^.height := height + margin.top + margin.bottom,
-      ^.width := width + margin.left + margin.right,
+      ^.height := height,
+      ^.width := width,
       ^.viewBox := "0 0 500 500",
       <.g(
         ^.transform := "translate(" + margin.left + "," + margin.top + ")",
         Axis.yLeft(y),
-        Axis.xBottom(x).apply(^.transform := s"translate(0,$height)"),
-        info.zipWithIndex.map{
-          case ((k, v), i) =>
-            val c = color(i)
+        Axis.xBottom(x).apply(^.transform := s"translate(0,${graphSize.height})"),
+        info.map{
+          case (k, v) =>
+            val c = color(k)
             <.rect(
               ^.`class` := "bar",
               ^.fill := s"rgb(${c.r}, ${c.g}, ${c.b})",

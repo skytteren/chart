@@ -38,6 +38,7 @@ trait Chart {
     <.svg(
       ^.height := height + margin.top + margin.bottom,
       ^.width := width + margin.left + margin.right,
+      ^.viewBox := "0 0 500 500",
       <.g(
         ^.transform := "translate(" + margin.left + "," + margin.top + ")",
         Axis.yLeft(y, 10),
@@ -88,6 +89,7 @@ trait Chart {
     <.svg(
       ^.height := height + margin.top + margin.bottom,
       ^.width := width + margin.left + margin.right,
+      ^.viewBox := "0 0 500 500",
       <.g(
         ^.transform := "translate(" + margin.left + "," + margin.top + ")",
         Axis.yLeft(y, 10),
@@ -128,6 +130,7 @@ trait Chart {
     <.svg(
       ^.height := height + margin.top + margin.bottom,
       ^.width := width + margin.left + margin.right,
+      ^.viewBox := "0 0 500 500",
       <.g(
         ^.transform := "translate(" + margin.left + "," + margin.top + ")",
         Axis.yLeft(y, 10),
@@ -170,6 +173,7 @@ trait Chart {
     <.svg(
       ^.height := height + margin.top + margin.bottom,
       ^.width := width + margin.left + margin.right,
+      ^.viewBox := "0 0 500 500",
       <.g(
         ^.transform := "translate(" + margin.left + "," + margin.top + ")",
         Axis.yLeft(y, 10),
@@ -216,6 +220,7 @@ trait Chart {
     <.svg(
       ^.height := height + margin.top + margin.bottom,
       ^.width := width + margin.left + margin.right,
+      ^.viewBox := "0 0 500 500",
       <.g(
         ^.transform := "translate(" + margin.left + "," + margin.top + ")",
         Axis.yLeft(y),

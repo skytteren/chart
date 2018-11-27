@@ -20,8 +20,8 @@ object ChartView {
     {"Kwon"     -> math.random() * 100}
   )
 
-  def dataList = Seq(
-    "A" ->  Seq(
+  def dataList = List(
+    "A" ->  List(
       1 -> math.random() * 5,
       2 -> math.random() * 4,
       3 -> math.random() * 2,
@@ -30,7 +30,7 @@ object ChartView {
       6 -> math.random() * 5,
       7 -> math.random() * 8,
     ),
-    "B" ->  Seq(
+    "B" ->  List(
       2 -> math.random() * 15,
       3 -> math.random() * 14,
       4 -> math.random() * 12,
@@ -39,7 +39,7 @@ object ChartView {
       7 -> math.random() * 15,
       8 -> math.random() * 18,
     ),
-    "C" ->  Seq(
+    "C" ->  List(
       1 -> (math.random() * 10 + 0),
       3 -> (math.random() * 10 + 5),
       4 -> (math.random() * 10 + 2),
@@ -48,7 +48,7 @@ object ChartView {
       7 -> (math.random() * 10 + 4),
       8 -> (math.random() * 10 + 6),
     ),
-    "D" ->  Seq(
+    "D" ->  List(
       1 -> (math.random() * 8 + 0),
       3 -> (math.random() * 8 + 7),
       4 -> (math.random() * 8 + 5),
@@ -57,7 +57,7 @@ object ChartView {
       7 -> (math.random() * 8 + 5),
       8 -> (math.random() * 8 + 6),
     ),
-    "E" ->  Seq(
+    "E" ->  List(
       1 -> (math.random() * 10 + 1),
       3 -> (math.random() * 10 + 2),
       4 -> (math.random() * 10 + 4),

@@ -1,6 +1,6 @@
 package no.skytteren.chart
 
-trait PlotChartInfo[T] {
+trait PlotChartInfo[-T] {
 
   def list(data: T): Seq[(String, Seq[(Double, Double)])]
 

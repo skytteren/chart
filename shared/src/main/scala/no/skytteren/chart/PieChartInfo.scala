@@ -1,6 +1,6 @@
 package no.skytteren.chart
 
-trait PieChartInfo[T] {
+trait PieChartInfo[-T] {
   def list(data: T): Seq[(String, Double)]
 }
 

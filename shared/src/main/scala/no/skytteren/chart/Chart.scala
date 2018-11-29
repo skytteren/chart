@@ -37,7 +37,7 @@ trait Chart {
 
     val points = info.flatMap(_._2)
     val x = scale.Linear(InputRange(points.map(_._1)), OutputRange(0, graphSize.width))
-    val y = scale.Linear(InputRange(points.map(_._2)), OutputRange(0, graphSize.height))
+    val y = scale.Linear(InputRange(0d, points.map(_._2).max), OutputRange(0, graphSize.height))
     val color = scale.Ordinal(info.map(_._1), colors)
 
     <.svg(

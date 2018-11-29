@@ -85,9 +85,8 @@ object ChartsServer{
 
   def start() {
     binding.future.foreach {
-      (sb: ServerBinding) ⇒
-        println(
-          s"""Server online at http://0.0.0.0:${sb.localAddress.getPort}/chart""".stripMargin)
+      sb: ServerBinding ⇒
+        println(s"""Server online at http://localhost:${sb.localAddress.getPort}/chart""")
     }
   }
 
@@ -100,6 +99,15 @@ object ChartsServer{
 
   def main(strings: Array[String]): Unit = {
     start()
+    binding.future.foreach { sb =>
+      Option(System.console).foreach {
+        console ⇒
+          console.readLine("Press ENTER to stop server")
+
+          sb.unbind() // trigger unbinding from the port
+            .onComplete(_ ⇒ system.terminate()) // and shutdown when done
+      }
+    }
   }
 
 

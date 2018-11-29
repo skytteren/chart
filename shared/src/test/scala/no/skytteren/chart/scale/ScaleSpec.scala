@@ -4,7 +4,7 @@ import java.time.{LocalDate, LocalDateTime}
 
 import org.scalatest._
 import org.scalatest.Matchers._
-import _root_.no.skytteren.chart.Color
+import _root_.no.skytteren.chart.{Color, RGB}
 
 class ScaleSpec extends FunSpec{
 
@@ -230,7 +230,7 @@ class ScaleSpec extends FunSpec{
 
     it("should invert") {
 
-      def s(c: Color) = scale.inverse(c).get
+      def s(c: RGB) = scale.inverse(c).get
 
       assert(s(Color(0, 0, 0)) === 0, "Color(0, 0, 0)")
       assert(s(Color.grey(127)) === 50, "Color(100, 100, 100)")

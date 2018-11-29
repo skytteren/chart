@@ -19,7 +19,7 @@ object Color {
   def apply(r: Int, g: Int, b: Int) = RGB(r, g, b)
   def apply(r: Int, g: Int, b: Int, a: Double) = RGBA(r, g, b, a)
 
-  def grey(c: Int) = Color(c,c,c, 1)
+  def grey(c: Int) = Color(c,c,c)
   def grey(c: Int, a: Double) = Color(c,c,c, a)
 
   def hex(in: String): RGB = {

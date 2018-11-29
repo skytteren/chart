@@ -79,7 +79,7 @@ trait Continuous[D, G] extends Scale[D, G]{
         math.pow(10, -power) / value
     }
 
-    if (start == stop && count > 0) {
+    (if (start == stop && count > 0) {
       List(start)
     } else {
       val step = if(stop < start) -tickIncrement(stop, start, count) else tickIncrement(start, stop, count)
@@ -96,7 +96,7 @@ trait Continuous[D, G] extends Scale[D, G]{
           startInc.to(stopInc, step).toList
         }
       }
-    }
+    }).filter(_ >= start).filter(_ <= stop)
   }
 } // (Identity)
 

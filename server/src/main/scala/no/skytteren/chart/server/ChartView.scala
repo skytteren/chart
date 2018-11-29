@@ -125,20 +125,26 @@ object ChartView {
       val left = 80
     }
 
+    object graphSize{
+      val height = 500 - margin.top - margin.bottom
+      val width = 500 - margin.left - margin.right
+    }
+
     val info = implicitly[BarChartInfo[D]].list(data)
 
     val values = info.map(_._2)
-    val x = scale.Log(InputRange(1, values.max), OutputRange(0, width))
-    val y = scale.Ordinal(info.map(_._1), OutputRange(0, height), .1)
+    val x = scale.Log(InputRange(1, values.max), OutputRange(0, graphSize.width))
+    val y = scale.Ordinal(info.map(_._1), OutputRange(0, graphSize.height), .1)
     val color = scale.Ordinal(info.map(_._1), OutputRange(ColorScheme.`900`))
 
     <.svg(
-      ^.height := height + margin.top + margin.bottom,
-      ^.width := width + margin.left + margin.right,
+      ^.height := height,
+      ^.width := width,
+      ^.viewBox := "0 0 500 500",
       <.g(
         ^.transform := "translate(" + margin.left + "," + margin.top + ")",
         Charts.Axis.yLeft(y),
-        Charts.Axis.xBottom(x, 10).apply(^.transform := s"translate(0,$height)"),
+        Charts.Axis.xBottom(x, 10).apply(^.transform := s"translate(0,${graphSize.height})"),
         info.map{
           case (k, v) =>
             val c = color(k)
@@ -164,20 +170,26 @@ object ChartView {
       val left = 80
     }
 
+    object graphSize{
+      val height = 500 - margin.top - margin.bottom
+      val width = 500 - margin.left - margin.right
+    }
+
     val info = implicitly[BarChartInfo[D]].list(data)
 
     val values = info.map(_._2)
-    val x = scale.Power(InputRange(0, values.max), OutputRange(0, width), exponent = 2)
-    val y = scale.Ordinal(info.map(_._1), OutputRange(0, height), .1)
+    val x = scale.Power(InputRange(0, values.max), OutputRange(0, graphSize.width), exponent = 2)
+    val y = scale.Ordinal(info.map(_._1), OutputRange(0, graphSize.height), .1)
     val color = scale.Ordinal(info.map(_._1), OutputRange(ColorScheme.`600`))
 
     <.svg(
-      ^.height := height + margin.top + margin.bottom,
-      ^.width := width + margin.left + margin.right,
+      ^.height := height,
+      ^.width := width,
+      ^.viewBox := "0 0 500 500",
       <.g(
         ^.transform := "translate(" + margin.left + "," + margin.top + ")",
         Charts.Axis.yLeft(y),
-        Charts.Axis.xBottom(x, 5).apply(^.transform := s"translate(0,$height)"),
+        Charts.Axis.xBottom(x, 5).apply(^.transform := s"translate(0,${graphSize.height})"),
         info.map{
           case (k, v) =>
             val c = color(k)

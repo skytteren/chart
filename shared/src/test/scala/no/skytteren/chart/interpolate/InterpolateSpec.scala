@@ -3,8 +3,7 @@ package no.skytteren.chart.interpolate
 import java.time.{LocalDate, LocalDateTime}
 
 import no.skytteren.chart.scale.OutputRange
-import no.skytteren.chart.Color
-
+import no.skytteren.chart.{Color, RGB}
 import org.scalatest.FunSpec
 import org.scalatest.Matchers._
 
@@ -58,7 +57,7 @@ class InterpolateSpec extends FunSpec{
 
     it("should deinterpolate") {
 
-      def i(c: Color) = Interpolater.color(OutputRange(Color.grey(0), Color.grey(255))).unapply(c).get
+      def i(c: RGB) = Interpolater.color(OutputRange(Color.grey(0), Color.grey(255))).unapply(c).get
 
       assert(i(Color.grey(0)) === 0.0)
       assert(i(Color.grey(128)) === (0.5 +- 0.005))

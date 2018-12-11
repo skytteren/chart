@@ -102,12 +102,12 @@ object ChartView {
     html(
       head(tags2.title("Chart")),
       body(
-        Charts.scatterPlot(randomList, 500, 400),
-        Charts.scatterPlot(dataList, 500, 400),
-        Charts.line(dataList, 500, 400),
-        Charts.line(dataList.map{case (k, v) => k -> v.map{case (k2, v2) => (k2 * 1000000) -> (v2*100000)}}, 500, 400),
-        Charts.barHorizontal(data, 500, 400),
-        Charts.barVertical(data, 500, 400),
+        Charts.scatterPlot(randomList, 500, 400, xLabel = "X-axis", yLabel = "Y-axis"),
+        Charts.scatterPlot(dataList, 500, 400, xLabel = "X-axis", yLabel = "Y-axis"),
+        Charts.line(dataList, 500, 400, xLabel = "X-axis", yLabel = "Y-axis"),
+        Charts.line(dataList.map{case (k, v) => k -> v.map{case (k2, v2) => (k2 * 1000000) -> (v2*100000)}}, 500, 400, xLabel = "X-axis", yLabel = "Y-axis", xFormat = (d: Double) => s"${d.toInt / 1000}k", yFormat = (d: Double) => s"${d.toInt / 1000}k"),
+        Charts.barHorizontal(data, 500, 400, xLabel = "X-axis", yLabel = "Y-axis"),
+        Charts.barVertical(data, 500, 400, xLabel = "X-axis", yLabel = "Y-axis"),
         barHorizontalLog(data, 500, 400),
         barHorizontalPow(data, 500, 400),
         Charts.donutChart(data, 500, 400, OutputRange(ColorScheme.`800`)),
@@ -143,8 +143,8 @@ object ChartView {
       ^.viewBox := "0 0 500 500",
       <.g(
         ^.transform := "translate(" + margin.left + "," + margin.top + ")",
-        Charts.Axis.yLeft(y),
-        Charts.Axis.xBottom(x, 10).apply(^.transform := s"translate(0,${graphSize.height})"),
+        Charts.Axis.yLeft(y, format = (s: String) => s, label = ""),
+        Charts.Axis.xBottom(x, 10, format = (d: Double) => d.toString, label = "").apply(^.transform := s"translate(0,${graphSize.height})"),
         info.map{
           case (k, v) =>
             val c = color(k)
@@ -188,8 +188,8 @@ object ChartView {
       ^.viewBox := "0 0 500 500",
       <.g(
         ^.transform := "translate(" + margin.left + "," + margin.top + ")",
-        Charts.Axis.yLeft(y),
-        Charts.Axis.xBottom(x, 5).apply(^.transform := s"translate(0,${graphSize.height})"),
+        Charts.Axis.yLeft(y, format = (s: String) => s, label = ""),
+        Charts.Axis.xBottom(x, 5, format = (s: Double) => s.toString, label = "").apply(^.transform := s"translate(0,${graphSize.height})"),
         info.map{
           case (k, v) =>
             val c = color(k)

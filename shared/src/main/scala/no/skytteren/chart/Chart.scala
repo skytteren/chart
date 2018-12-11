@@ -19,8 +19,15 @@ trait Chart {
   import bundle.{svgAttrs => ^}
 
   def line[D: LineChartInfo, OR[R] <: OutputRange[R]](
-     data: D, width: Int, height: Int, colors: OR[RGB] = OutputRange(ColorScheme.`400`)
+     data: D,
+     width: Int, height: Int,
+     xLabel: String = "", yLabel: String = "",
+     xFormat: Double => String = _.toString, yFormat: Double => String = _.toString,
+     colors: OR[RGB] = OutputRange(ColorScheme.`400`)
    )(implicit factory: Factory[RGB, OR]) = {
+
+    val tickCount = 6
+
     object margin{
       val top = 20
       val right = 30
@@ -36,8 +43,10 @@ trait Chart {
     val info = implicitly[LineChartInfo[D]].list(data)
 
     val points = info.flatMap(_._2)
-    val x = scale.Linear(InputRange(points.map(_._1)), OutputRange(0, graphSize.width))
-    val y = scale.Linear(InputRange(0d, points.map(_._2).max), OutputRange(0, graphSize.height))
+    val xS = scale.Linear(InputRange(points.map(_._1)), OutputRange(0, graphSize.width)).ticks(tickCount)
+    val x = scale.Linear(InputRange(xS), OutputRange(0, graphSize.width))
+    val yS = scale.Linear(InputRange(0d, points.map(_._2).max), OutputRange(0, graphSize.height)).ticks(tickCount)
+    val y = scale.Linear(InputRange(yS), OutputRange(0, graphSize.height))
     val color = scale.Ordinal(info.map(_._1), colors)
 
     <.svg(
@@ -46,8 +55,8 @@ trait Chart {
       ^.viewBox := "0 0 500 500",
       <.g(
         ^.transform := "translate(" + margin.left + "," + margin.top + ")",
-        Axis.yLeft(y, 10),
-        Axis.xBottom(x).apply(^.transform := s"translate(0,${graphSize.height})"),
+        Axis.yLeft(y, tickCount, format = yFormat, label = yLabel),
+        Axis.xBottom(x, tickCount, format = xFormat, label = xLabel).apply(^.transform := s"translate(0,${graphSize.height})"),
         info.map { case (lineName, linePoints) =>
           val c = color(lineName)
           <.path(
@@ -76,8 +85,14 @@ trait Chart {
   }
 
   def scatterPlot[D: PlotChartInfo, OR[R] <: OutputRange[R]](
-       data: D, width: Int, height: Int, colors: OR[RGB] = OutputRange(ColorScheme.`400`)
+       data: D,
+       width: Int, height: Int,
+       xLabel: String = "", yLabel: String = "",
+       xFormat: Double => String = _.toString, yFormat: Double => String = _.toString,
+       colors: OR[RGB] = OutputRange(ColorScheme.`400`)
     )(implicit factory: Factory[RGB, OR]) = {
+
+    val tickCount = 6
     object margin{
       val top = 20
       val right = 30
@@ -93,8 +108,10 @@ trait Chart {
     val info = implicitly[PlotChartInfo[D]].list(data)
 
     val points = info.flatMap(_._2)
-    val x = scale.Linear(InputRange(points.map(_._1)), OutputRange(0, graphSize.width))
-    val y = scale.Linear(InputRange(points.map(_._2)), OutputRange(0, graphSize.height))
+    val sX = scale.Linear(InputRange(points.map(_._1)), OutputRange(0, graphSize.width)).ticks(tickCount)
+    val x = scale.Linear(InputRange(sX), OutputRange(0, graphSize.width))
+    val sY = scale.Linear(InputRange(points.map(_._2)), OutputRange(0, graphSize.width)).ticks(tickCount)
+    val y = scale.Linear(InputRange(sY), OutputRange(0, graphSize.height))
     val color = scale.Ordinal(info.map(_._1), colors)
     <.svg(
       ^.height := height,
@@ -102,8 +119,8 @@ trait Chart {
       ^.viewBox := "0 0 500 500",
       <.g(
         ^.transform := "translate(" + margin.left + "," + margin.top + ")",
-        Axis.yLeft(y, 10),
-        Axis.xBottom(x).apply(^.transform := s"translate(0,${graphSize.height})"),
+        Axis.yLeft(y, tickCount, format = yFormat, label = yLabel),
+        Axis.xBottom(x, tickCount, format = xFormat, label = xLabel).apply(^.transform := s"translate(0,${graphSize.height})"),
         info.map { case (lineName, classPoints) =>
           val c = color(lineName)
           classPoints.map { case (k, v) =>
@@ -121,8 +138,13 @@ trait Chart {
   }
 
   def barVertical[D: BarChartInfo, OR[R] <: OutputRange[R]](
-    data: D, width: Int, height: Int, colors: OR[RGB] = OutputRange(ColorScheme.`400`)
+    data: D,
+    width: Int, height: Int,
+    xLabel: String = "", yLabel: String = "",
+    xFormat: String => String = _.toString, yFormat: Double => String = _.toString,
+    colors: OR[RGB] = OutputRange(ColorScheme.`400`)
   )(implicit factory: Factory[RGB, OR]) = {
+    val tickCount = 6
     object margin{
       val top = 20
       val right = 30
@@ -139,7 +161,8 @@ trait Chart {
 
     val values = info.map(_._2)
     val x = scale.Ordinal(info.map(_._1), OutputRange(0, graphSize.width), .1)
-    val y = scale.Linear(InputRange(0, values.max), OutputRange(0, graphSize.height))
+    val yS = scale.Linear(InputRange(0, values.max), OutputRange(0, graphSize.height)).ticks(tickCount)
+    val y = scale.Linear(InputRange(yS), OutputRange(0, graphSize.height))
     val color = scale.Ordinal(info.map(_._1), colors)
 
     <.svg(
@@ -148,8 +171,8 @@ trait Chart {
       ^.viewBox := "0 0 500 500",
       <.g(
         ^.transform := "translate(" + margin.left + "," + margin.top + ")",
-        Axis.yLeft(y, 10),
-        Axis.xBottom(x).apply(^.transform := s"translate(0,${graphSize.height})"),
+        Axis.yLeft(y, tickCount, label = yLabel, format = yFormat),
+        Axis.xBottom(x, label = xLabel, format = xFormat).apply(^.transform := s"translate(0,${graphSize.height})"),
         info.map{
           case (k, v) =>
             val c = color(k)
@@ -167,8 +190,14 @@ trait Chart {
   }
 
   def barVerticalStacked[D: BarChartStackedInfo, OR[R] <: OutputRange[R]](
-     data: D, width: Int, height: Int, colors: OR[RGB] = OutputRange(ColorScheme.`400`)
+     data: D,
+     width: Int, height: Int,
+     xLabel: String = "", yLabel: String = "",
+     xFormat: String => String = _.toString, yFormat: Double => String = _.toString,
+     colors: OR[RGB] = OutputRange(ColorScheme.`400`)
     )(implicit factory: Factory[RGB, OR]) = {
+
+    val tickCount = 6
     object margin{
       val top = 20
       val right = 30
@@ -185,7 +214,8 @@ trait Chart {
     val x = scale.Ordinal(info.map(_._1), OutputRange(0, graphSize.width), .1)
     val maxValue: Double = info.map(_._2.map(_._2).sum).max
     val colorId: Seq[String] = info.flatMap(_._2.map(_._1)).distinct
-    val y = scale.Linear(InputRange(0d, maxValue), OutputRange(0d, graphSize.height))
+    val yS = scale.Linear(InputRange(0d, maxValue), OutputRange(0d, graphSize.height)).ticks(tickCount)
+    val y = scale.Linear(InputRange(yS), OutputRange(0d, graphSize.height))
     val color = scale.Ordinal(colorId, colors)
 
 
@@ -195,8 +225,8 @@ trait Chart {
       ^.viewBox := "0 0 500 500",
       <.g(
         ^.transform := "translate(" + margin.left + "," + margin.top + ")",
-        Axis.yLeft(y, 10),
-        Axis.xBottom(x).apply(^.transform := s"translate(0,${graphSize.height})"),
+        Axis.yLeft(y, tickCount, format = yFormat, label = yLabel),
+        Axis.xBottom(x, format = xFormat, label = xLabel).apply(^.transform := s"translate(0,${graphSize.height})"),
         info.map{
           case (k1, values) =>
             values.foldLeft((0d, List[Frag]())){
@@ -220,8 +250,15 @@ trait Chart {
     )
   }
 
-  def barHorizontal[D: BarChartInfo, OR[R] <: OutputRange[R]](data: D, width: Int, height: Int, colors: OR[RGB] = OutputRange(ColorScheme.`400`)
-                                                             )(implicit factory: Factory[RGB, OR]) = {
+  def barHorizontal[D: BarChartInfo, OR[R] <: OutputRange[R]](
+     data: D,
+     width: Int, height: Int,
+     xLabel: String = "", yLabel: String = "",
+     xFormat: Double => String = _.toString, yFormat: String => String = _.toString,
+     colors: OR[RGB] = OutputRange(ColorScheme.`400`)
+   )(implicit factory: Factory[RGB, OR]) = {
+
+    val tickCount = 6
     object margin{
       val top = 20
       val right = 50
@@ -237,7 +274,8 @@ trait Chart {
     val info = implicitly[BarChartInfo[D]].list(data)
 
     val values = info.map(_._2)
-    val x = scale.Linear(InputRange(0, values.max), OutputRange(0, graphSize.width))
+    val xS = scale.Linear(InputRange(0, values.max), OutputRange(0, graphSize.width)).ticks(tickCount)
+    val x = scale.Linear(InputRange(xS), OutputRange(0, graphSize.width))
     val y = scale.Ordinal(info.map(_._1), OutputRange(0, graphSize.height), .1)
     val color = scale.Ordinal(info.map(_._1), colors)
 
@@ -247,8 +285,8 @@ trait Chart {
       ^.viewBox := "0 0 500 500",
       <.g(
         ^.transform := "translate(" + margin.left + "," + margin.top + ")",
-        Axis.yLeft(y),
-        Axis.xBottom(x).apply(^.transform := s"translate(0,${graphSize.height})"),
+        Axis.yLeft(y, format = yFormat, label = yLabel),
+        Axis.xBottom(x, tickCount, format = xFormat, label = xLabel).apply(^.transform := s"translate(0,${graphSize.height})"),
         info.map{
           case (k, v) =>
             val c = color(k)
@@ -339,7 +377,7 @@ trait Chart {
 
   object Axis {
 
-    def yLeft[D:InputData, G: NumberData](scale: Linear[D, G, StartEndRange], count: Int = 10) = {
+    def yLeft[D:InputData, G: NumberData](scale: Linear[D, G, StartEndRange], count: Int = 10, format: D => String, label: String) = {
       val number = implicitly[InputData[G]]
       val tickList: List[D] = scale.ticks(count)
       <.g(
@@ -364,7 +402,7 @@ trait Chart {
               ^.fill := "#000",
               ^.x := "-9",
               ^.dy := "0.32em",
-              tick.toString
+              format(tick)
             )
           )
         }),
@@ -374,12 +412,12 @@ trait Chart {
           ^.y := "6",
           ^.dy := "0.71em",
           ^.textAnchor := "end",
-          "Frequency"
+          label
         )
       )
     }
 
-    def yLeft[D, G: InputData](scale: Ordinal[D, G, StartEndRange]) = {
+    def yLeft[D, G: InputData](scale: Ordinal[D, G, StartEndRange], format: D => String, label: String) = {
       val number = implicitly[InputData[G]]
       <.g(
         ^.`class` := "axis axis--y",
@@ -403,15 +441,22 @@ trait Chart {
               ^.fill := "#000",
               ^.x := "-9",
               ^.dy := "0.32em",
-              e.toString
+              format(e)
             )
           )
-        })
+        }),
+        <.text(
+          ^.fill := "#000",
+          ^.x := "-9",
+          ^.dy := "-0.32em",
+          ^.textAnchor := "end",
+          label
 
+        )
       )
     }
 
-    def xBottom[D, G: InputData](scale: Ordinal[D, G, StartEndRange]) = {
+    def xBottom[D, G: InputData](scale: Ordinal[D, G, StartEndRange], label: String, format: D => String) = {
       val number = implicitly[InputData[G]]
       <.g(
         ^.`class` := "axis axis--x",
@@ -435,21 +480,22 @@ trait Chart {
               ^.fill := "#000",
               ^.y := "9",
               ^.dy := "0.71em",
-              e.toString
+              format(e)
             )
           )
         }),
         <.text(
-          ^.transform := "rotate(-90)",
-          ^.y := "6",
-          ^.dy := "0.71em",
-          ^.textAnchor := "middle",
-          "Frequency"
+          ^.transform := s"translate(${number(scale.range.end)},0)",
+          ^.y := "-6",
+          ^.dx := "0.32em",
+          ^.textAnchor := "start",
+          ^.fill := "#000",
+          label
         )
       )
     }
 
-    def xBottom[D, G: InputData](scale: Continuous[D, G], count: Int = 10) = {
+    def xBottom[D, G: InputData](scale: Continuous[D, G], count: Int = 10, label: String, format: D => String) = {
       val tickList: List[D] = scale.ticks(count)
       val number = implicitly[InputData[G]]
       <.g(
@@ -474,16 +520,17 @@ trait Chart {
               ^.fill := "#000",
               ^.y := "9",
               ^.dy := "0.71em",
-              tick.toString
+              format(tick)
             )
           )
         }),
         <.text(
-          ^.transform := "rotate(-90)",
-          ^.y := "6",
-          ^.dy := "0.71em",
-          ^.textAnchor := "middle",
-          "Frequency"
+          ^.transform := s"translate(${number(scale(tickList.last)).round.toInt}.5,0)",
+          ^.y := "-6",
+          ^.dx := "0.71em",
+          ^.textAnchor := "start",
+          ^.fill := "#000",
+          label
         )
       )
     }

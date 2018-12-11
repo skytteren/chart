@@ -29,6 +29,7 @@ lazy val chartJs = chart.js.enablePlugins(WorkbenchPlugin)
 
 lazy val server = project
   .dependsOn(chartJvm)
+  .settings(commonSettings :_*)
   .settings(
     libraryDependencies += "com.typesafe.akka" %% "akka-http" % "10.0.13",
   )

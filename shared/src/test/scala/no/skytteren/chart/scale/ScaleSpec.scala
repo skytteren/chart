@@ -70,6 +70,36 @@ class ScaleSpec extends FunSpec{
       assert(s(5) === 5)
 
     }
+
+    it("should handle ticks"){
+      val ints = Linear(InputRange(3, 27), OutputRange(0d, 1d))
+      assert(ints.ticks() === List(2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28))
+    }
+
+    it("should handle ticks reverse"){
+      val ints = Linear(InputRange(27, 3), OutputRange(0d, 1d))
+      assert(ints.ticks() === List(2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28).reverse)
+    }
+
+    it("should handle ticks 2"){
+      val ints = Linear(InputRange(0, 33040), OutputRange(0d, 1d))
+      assert(ints.ticks() === List(0, 5000, 10000, 15000, 20000, 25000, 30000, 35000))
+    }
+
+    it("should handle ticks2"){
+      val ints = Linear(InputRange(3, 27), OutputRange(0d, 1d))
+      assert(ints.ticks2() === List(0, 5, 10, 15, 20, 25, 30))
+    }
+
+    it("should handle ticks2 reverse"){
+      val ints = Linear(InputRange(27, 3), OutputRange(0d, 1d))
+      assert(ints.ticks2() === List(30, 25, 20, 15, 10, 5, 0))
+    }
+
+    it("should handle ticks2 2"){
+      val ints = Linear(InputRange(0, 27040), OutputRange(0d, 1d))
+      assert(ints.ticks2() === List(0, 5000, 10000, 15000, 20000, 25000, 30000))
+    }
   }
 
   describe("scaleLog"){

@@ -25,7 +25,7 @@ lazy val chart = crossProject(JSPlatform, JVMPlatform)
   )
 
 lazy val chartJvm = chart.jvm
-lazy val chartJs = chart.js.enablePlugins(WorkbenchPlugin)
+lazy val chartJs = chart.js
 
 lazy val server = project
   .dependsOn(chartJvm)

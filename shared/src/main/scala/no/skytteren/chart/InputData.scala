@@ -1,6 +1,6 @@
 package no.skytteren.chart
 
-import java.time.{LocalDate, LocalDateTime, ZoneOffset}
+import no.skytteren.scalatime._
 
 trait InputData[T]{
   def apply(t:T): Double
@@ -43,16 +43,16 @@ object InputData{
     override def reverse(d: Double): Int = d.round.toInt
   }
 
-  implicit object LocalDateInputData$ extends TimeData[LocalDate]{
-    override def apply(d:LocalDate): Double = d.toEpochDay
+  implicit object DateInputData$ extends TimeData[Date]{
+    override def apply(d:Date): Double = ZonedDateTime(d, Time(), Offset.Z).toEpochSecond.value
 
-    override def reverse(d: Double): LocalDate = LocalDate.ofEpochDay(d.toLong)
+    override def reverse(d: Double): Date = ZonedDateTime.fromEpochSecond(Seconds(d.toLong)).toDate
   }
 
-  implicit object LocalDateTimeInputData$ extends TimeData[LocalDateTime]{
-    override def apply(d:LocalDateTime): Double = d.toEpochSecond(ZoneOffset.UTC)
+  implicit object DateTimeInputData$ extends TimeData[DateTime]{
+    override def apply(d:DateTime): Double = d.toEpochSecond.value
 
-    override def reverse(d: Double): LocalDateTime = LocalDateTime.ofEpochSecond(d.toLong, 0, ZoneOffset.UTC)
+    override def reverse(d: Double): DateTime = ZonedDateTime.fromEpochSecond(Seconds(d.toLong)).toDateTime
   }
 
 

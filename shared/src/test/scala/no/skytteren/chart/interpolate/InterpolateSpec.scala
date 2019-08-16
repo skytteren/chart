@@ -1,7 +1,5 @@
 package no.skytteren.chart.interpolate
 
-import java.time.{LocalDate, LocalDateTime}
-
 import no.skytteren.chart.scale.OutputRange
 import no.skytteren.chart.{Color, RGB}
 import org.scalatest.FunSpec
@@ -67,33 +65,5 @@ class InterpolateSpec extends FunSpec{
   }
 
 
-  describe("Interpolate date"){
-    it("should interpolate") {
-
-      def i = Interpolater.date(OutputRange(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 12, 31)))
-
-      assert(i(0.0) === LocalDate.of(2018, 1, 1))
-
-      assert(i(0.5) === LocalDate.of(2018, 7, 2))
-
-      assert(i(1) === LocalDate.of(2018, 12, 31))
-
-    }
-  }
-
-  describe("Interpolate datetime"){
-    it("should interpolate") {
-
-      def i = Interpolater.dateTime(OutputRange(LocalDateTime.of(2018, 1, 1, 0, 0, 0), LocalDateTime
-        .of(2018, 12, 31, 23, 59, 59)))
-
-      assert(i(0.0) === LocalDateTime.of(2018, 1, 1, 0, 0, 0))
-
-      assert(i(0.5) === LocalDateTime.of(2018, 7, 2, 11, 59, 59))
-
-      assert(i(1) === LocalDateTime.of(2018, 12, 31, 23, 59, 59))
-
-    }
-  }
 
 }

@@ -5,6 +5,7 @@ import no.skytteren.chart.scale.{StartEndRange, _}
 import no.skytteren.chart.scheme.ColorScheme
 import scalatags.generic
 import scala.language.higherKinds
+import Ordering.Double.TotalOrdering
 
 trait Chart {
 
@@ -229,7 +230,7 @@ trait Chart {
         Axis.xBottom(x, format = xFormat, label = xLabel).apply(^.transform := s"translate(0,${graphSize.height})"),
         info.map{
           case (k1, values) =>
-            values.foldLeft((0d, List[Frag]())){
+            values.foldLeft((0d: Double, List[Frag]())){
               case ((offset, elems), (k2, ve)) =>
                 val c = color(k2)
 
@@ -315,8 +316,8 @@ trait Chart {
 
     val color = scale.Linear(InputRange(0, info.size), colors)
 
-    val preparedInfo: List[(String, Double, Double, Int)] = info.foldLeft((Nil: List[(String, Double, Double, Int)], 0)) {
-      case ((Nil, i), (label, size)) => List((label, 0d, size / total * radius * 2 * math.Pi, i)) -> (i + 1)
+    val preparedInfo: List[(String, Double, Double, Int)] = info.foldLeft((Nil: List[(String, Double, Double, Int)], 0: Int)) {
+      case ((Nil, i), (label, size)) => List((label, 0d:Double, size / total * radius * 2 * math.Pi, i)) -> (i + 1)
       case ((list @ (_, hStart, hSize, _) :: _, i), (label, size)) => ((label, hStart + hSize, size / total * radius * 2 * math.Pi, i) :: list) -> (i + 1)
     }._1.sortBy(_._1)
 

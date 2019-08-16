@@ -6,6 +6,8 @@ import no.skytteren.chart.{BarChartInfo, Charts, scale}
 import scalatags.Text.all._
 import scalatags.Text.tags2
 
+import Ordering.Double.TotalOrdering
+
 import scala.util.Random
 
 object ChartView {

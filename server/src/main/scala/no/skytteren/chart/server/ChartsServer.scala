@@ -13,10 +13,9 @@ import akka.stream.ActorMaterializer
 import akka.util.ByteString
 import com.typesafe.config.ConfigFactory
 import no.skytteren.chart.Charts
-import scalatags.text.SvgTags
 
 import scala.collection.mutable
-import scala.concurrent.{Future, Promise}
+import scala.concurrent.Promise
 
 object ChartsServer{
 
@@ -83,17 +82,17 @@ object ChartsServer{
   )
 
 
-  def start() {
+  def start(): Unit = {
     binding.future.foreach {
-      sb: ServerBinding ⇒
+      sb: ServerBinding =>
         println(s"""Server online at http://localhost:${sb.localAddress.getPort}/chart""")
     }
   }
 
-  def stop() = {
-    binding.future.foreach { sb ⇒
+  def stop(): Unit = {
+    binding.future.foreach { sb =>
             sb.unbind() // trigger unbinding from the port
-              .onComplete(_ ⇒ system.terminate()) // and shutdown when done
+              .onComplete(_ => system.terminate()) // and shutdown when done
     }
   }
 
@@ -101,11 +100,11 @@ object ChartsServer{
     start()
     binding.future.foreach { sb =>
       Option(System.console).foreach {
-        console ⇒
+        console =>
           console.readLine("Press ENTER to stop server")
 
           sb.unbind() // trigger unbinding from the port
-            .onComplete(_ ⇒ system.terminate()) // and shutdown when done
+            .onComplete(_ => system.terminate()) // and shutdown when done
       }
     }
   }

@@ -1,7 +1,6 @@
 package no.skytteren.chart.scale
 
-import java.time.{LocalDate, LocalDateTime}
-
+import no.skytteren.scalatime.{Date, Year, Month, DayOfMonth, DateTime}
 import org.scalatest._
 import org.scalatest.Matchers._
 import _root_.no.skytteren.chart.{Color, RGB}
@@ -153,7 +152,7 @@ class ScaleSpec extends FunSpec{
       val ints = Log(InputRange(1, 32), OutputRange(0d, 1d), base = 2)
       assert(ints.ticks() === List(1, 2, 4, 8, 16, 32))
       val e = Log(InputRange(1.0, 32.0), OutputRange(0d, 1d), base = Math.E)
-      assert(e.ticks().map(_.toString).map(i => i.substring(0, math.min(i.length, 6))) === List("1.0", "2.7182", "7.3890", "20.085", "54.598"))
+      assert(e.ticks().map(_.formatted("%.3f")).map(i => i.substring(0, math.min(i.length, 6))) === List("1.000", "2.718", "7.389", "20.086", "54.598"))
     }
 
   }
@@ -198,20 +197,20 @@ class ScaleSpec extends FunSpec{
   describe("scaleTime"){
 
 
-    val scale = Time(InputRange(LocalDate.of(2000, 1, 1), LocalDate.of(2000, 1, 3)), OutputRange(0.0, 1.0))
+    val timeScale = Time(InputRange(Date(Year(2000), Month(1), DayOfMonth(1)), Date(Year(2000), Month(1), DayOfMonth(3))), OutputRange(0.0, 1.0))
     it("should scale") {
 
-      def s = scale
+      def s = timeScale
 
-      assert(s(LocalDate.of(2000, 1, 1)) === 0.0, "LocalDate.of(2000, 0, 1)")
-      assert(s(LocalDate.of(2000, 1, 2)) === 0.5, "LocalDate.of(2000, 0, 2)")
+      assert(s(Date(Year(2000), Month(1), DayOfMonth(1))) === 0.0, "Date.of(2000, 0, 1)")
+      assert(s(Date(Year(2000), Month(1), DayOfMonth(2))) === 0.5, "Date.of(2000, 0, 2)")
     }
 
     it("should invert") {
 
-      def s(d: Double) = scale.inverse(d).get
-      assert(s(0.0) === LocalDate.of(2000, 1, 1), "LocalDate.of(2000, 0, 1)")
-      assert(s(1.0) === LocalDate.of(2000, 1, 3), "LocalDate.of(2000, 0, 2)")
+      def s(d: Double) = timeScale.inverse(d).get
+      assert(s(0.0) === Date(Year(2000), Month(1), DayOfMonth(1)), "Date.of(2000, 0, 1)")
+      assert(s(1.0) === Date(Year(2000), Month(1), DayOfMonth(3)), "Date.of(2000, 0, 2)")
     }
 
   }
@@ -219,8 +218,8 @@ class ScaleSpec extends FunSpec{
 
     val scale = Time(
       InputRange(
-        LocalDateTime.of(2000, 1, 1, 0, 0, 0),
-        LocalDateTime.of(2000, 1, 3, 0, 0, 0)
+        DateTime(Year(2000)),
+        DateTime(Year(2000), dayOfMonth = DayOfMonth(3))
       ),
       OutputRange(0.0, 1.0)
     )
@@ -228,16 +227,16 @@ class ScaleSpec extends FunSpec{
     it("should scale") {
 
       def s = scale
-      assert(s(LocalDateTime.of(2000, 1, 1, 0, 0, 0)) === 0.0, "LocalDate.of(2000, 0, 1)")
-      assert(s(LocalDateTime.of(2000, 1, 2, 0, 0, 0)) === 0.5, "LocalDate.of(2000, 0, 2)")
+      assert(s(DateTime(Year(2000))) === 0.0, "Date.of(2000, 0, 1)")
+      assert(s(DateTime(Year(2000), dayOfMonth = DayOfMonth(2))) === 0.5, "Date.of(2000, 0, 2)")
     }
 
 
     it("should invert") {
 
       def s(d: Double) = scale.inverse(d).get
-      assert(s(0.0) === LocalDateTime.of(2000, 1, 1, 0, 0, 0), "LocalDate.of(2000, 0, 1)")
-      assert(s(1.0) === LocalDateTime.of(2000, 1, 3, 0, 0, 0), "LocalDate.of(2000, 0, 2)")
+      assert(s(0.0) === DateTime(Year(2000), dayOfMonth = DayOfMonth(1)), "Date.of(2000, 0, 1)")
+      assert(s(1.0) === DateTime(Year(2000), dayOfMonth = DayOfMonth(3)), "Date.of(2000, 0, 2)")
     }
 
   }

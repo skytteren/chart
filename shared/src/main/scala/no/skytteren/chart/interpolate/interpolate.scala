@@ -1,10 +1,10 @@
 package no.skytteren.chart.interpolate
 
-import java.time.{LocalDate, LocalDateTime, ZoneOffset}
-
+import no.skytteren.scalatime.{Date, DateTime, Days, Seconds}
 import no.skytteren.chart.interpolate.Interpolater.Factory
 import no.skytteren.chart.{Color, NumberData, RGB}
 import no.skytteren.chart.scale.{OutputRange, StartEndRange, StepsRange}
+
 import scala.language.higherKinds
 
 trait Interpolater[N]{
@@ -29,8 +29,8 @@ object Interpolater{
   def number[N: NumberData](range: StartEndRange[N]): Interpolater[N] = new InterpolateNumber[N](range)
   def round[N: NumberData](range: StartEndRange[N]): Interpolater[N] = new InterpolateRound[N](range)
   def color(range: StartEndRange[RGB]): Interpolater[RGB] = new InterpolateColor(range)
-  def date(range: StartEndRange[LocalDate]): Interpolater[LocalDate] = new InterpolateDate(range)
-  def dateTime(range: StartEndRange[LocalDateTime]): Interpolater[LocalDateTime] = new InterpolateDateTime(range)
+  def date(range: StartEndRange[Date]): Interpolater[Date] = new InterpolateDate(range)
+  def dateTime(range: StartEndRange[DateTime]): Interpolater[DateTime] = new InterpolateDateTime(range)
 }
 
 case class Stepsinterpolater[T](stepsRange: StepsRange[T])(implicit factory: Factory[T, StartEndRange]) extends Interpolater[T]{
@@ -101,45 +101,42 @@ case class InterpolateColor(range: StartEndRange[RGB]) extends Interpolater[RGB]
   override def span: Option[Double] = None
 }
 
-case class InterpolateDate(range: StartEndRange[LocalDate]) extends Interpolater[LocalDate]{
+case class InterpolateDate(range: StartEndRange[Date]) extends Interpolater[Date]{
 
-  override def apply(value: Double): LocalDate = LocalDate.ofEpochDay((range.start.toEpochDay * (1 - value) + range.end.toEpochDay * value).toLong)
+  override def apply(value: Double): Date = range.start + (days = Days((range.start.toDays.value * (1 - value) + range.end.toDays.value * value).toLong))
 
-  override def unapply(d: LocalDate): Option[Double] = span.map((d.toEpochDay - range.start.toEpochDay) / _)
+  override def unapply(d: Date): Option[Double] = span.map((d.toDays.value - range.start.toDays.value) / _)
 
-  override def clamp(d: LocalDate): LocalDate = {
-    if(d.isBefore(range.start)){
+  override def clamp(d: Date): Date = {
+    if(d < range.start){
       range.start
-    } else if (d.isAfter(range.end)) {
+    } else if (d > range.end) {
       range.end
     } else {
       d
     }
   }
 
-  override def span: Option[Double] = Some(range.end.toEpochDay - range.start.toEpochDay)
+  override def span: Option[Double] = Some(range.end.toDays.value - range.start.toDays.value)
 }
 
 
-case class InterpolateDateTime(range: StartEndRange[LocalDateTime]) extends Interpolater[LocalDateTime]{
+case class InterpolateDateTime(range: StartEndRange[DateTime]) extends Interpolater[DateTime]{
 
-  override def apply(value: Double): LocalDateTime = LocalDateTime.ofEpochSecond(
-    (range.start.toEpochSecond(ZoneOffset.UTC) * (1 - value) + range.end.toEpochSecond(ZoneOffset.UTC) * value).toLong,
-    0,
-    ZoneOffset.UTC
-  )
+  override def apply(value: Double): DateTime =
+    range.start + (seconds = Seconds((range.start.toEpochSecond.value * (1 - value) + range.end.toEpochSecond.value * value).toLong))
 
-  override def unapply(d: LocalDateTime): Option[Double] = span.map((d.toEpochSecond(ZoneOffset.UTC) - range.start.toEpochSecond(ZoneOffset.UTC)) / _)
+  override def unapply(d: DateTime): Option[Double] = span.map((d.toEpochSecond.value - range.start.toEpochSecond.value) / _)
 
-  override def clamp(d: LocalDateTime): LocalDateTime = {
-    if(d.isBefore(range.start)){
+  override def clamp(d: DateTime): DateTime = {
+    if(d < range.start){
       range.start
-    } else if (d.isAfter(range.end)) {
+    } else if (range.end < d) {
       range.end
     } else {
       d
     }
   }
 
-  override def span: Option[Double] = Some(range.end.toEpochSecond(ZoneOffset.UTC) - range.start.toEpochSecond(ZoneOffset.UTC))
+  override def span: Option[Double] = Some(range.end.toEpochSecond.value - range.start.toEpochSecond.value)
 }

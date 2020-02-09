@@ -103,7 +103,7 @@ case class InterpolateColor(range: StartEndRange[RGB]) extends Interpolater[RGB]
 
 case class InterpolateDate(range: StartEndRange[Date]) extends Interpolater[Date]{
 
-  override def apply(value: Double): Date = range.start + (days = Days((range.start.toDays.value * (1 - value) + range.end.toDays.value * value).toLong))
+  override def apply(value: Double): Date = range.start + Days((range.start.toDays.value * (1 - value) + range.end.toDays.value * value).toLong)
 
   override def unapply(d: Date): Option[Double] = span.map((d.toDays.value - range.start.toDays.value) / _)
 
@@ -124,7 +124,7 @@ case class InterpolateDate(range: StartEndRange[Date]) extends Interpolater[Date
 case class InterpolateDateTime(range: StartEndRange[DateTime]) extends Interpolater[DateTime]{
 
   override def apply(value: Double): DateTime =
-    range.start + (seconds = Seconds((range.start.toEpochSecond.value * (1 - value) + range.end.toEpochSecond.value * value).toLong))
+    range.start + Seconds((range.start.toEpochSecond.value * (1 - value) + range.end.toEpochSecond.value * value).toLong)
 
   override def unapply(d: DateTime): Option[Double] = span.map((d.toEpochSecond.value - range.start.toEpochSecond.value) / _)
 

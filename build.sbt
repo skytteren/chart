@@ -22,7 +22,7 @@ lazy val chart = crossProject(JSPlatform, JVMPlatform)
   .settings(
     libraryDependencies += "com.lihaoyi" %%% "scalatags" % "0.7.0",
     libraryDependencies += "org.scalatest" %%% "scalatest" % "3.0.8" % "test",
-    libraryDependencies += "no.skytteren" %%% "scalatime" % "deb994b33fe2d8f710a2002f27a0bd7df29972f0",
+    libraryDependencies += "no.skytteren" %%% "scalatime" % "feaaa41e63c1eb7d180433f5a06f85f9e9d5beb7",
   )
 
 lazy val chartJvm = chart.jvm

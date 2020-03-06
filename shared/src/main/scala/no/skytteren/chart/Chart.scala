@@ -4,7 +4,7 @@ import no.skytteren.chart.interpolate.Interpolater.Factory
 import no.skytteren.chart.scale.{StartEndRange, _}
 import no.skytteren.chart.scheme.ColorScheme
 import scalatags.generic
-import scala.language.higherKinds
+
 import Ordering.Double.TotalOrdering
 
 trait Chart {

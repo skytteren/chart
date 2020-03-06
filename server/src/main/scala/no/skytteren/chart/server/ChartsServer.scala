@@ -9,7 +9,6 @@ import akka.http.scaladsl.coding.Gzip
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import akka.stream.ActorMaterializer
 import akka.util.ByteString
 import com.typesafe.config.ConfigFactory
 import no.skytteren.chart.Charts
@@ -23,7 +22,6 @@ object ChartsServer{
   val config = ConfigFactory.load()
 
   implicit val system = ActorSystem("chart-system")
-  implicit val materializer = ActorMaterializer()
   implicit val executionContext = system.dispatcher
   val registeredCharts = mutable.Map[Name, Charts.Bundle#Frag]()
 

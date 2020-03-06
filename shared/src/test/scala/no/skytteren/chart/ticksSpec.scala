@@ -1,9 +1,8 @@
 package no.skytteren.chart
 
+import org.scalatest.funspec.AnyFunSpec
 
-import org.scalatest._
-
-class ticksSpec extends FunSpec{
+class ticksSpec extends AnyFunSpec{
 
   describe("ticksSpec") {
     it("should scale") {

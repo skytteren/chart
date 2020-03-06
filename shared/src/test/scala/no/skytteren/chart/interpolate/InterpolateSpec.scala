@@ -2,10 +2,10 @@ package no.skytteren.chart.interpolate
 
 import no.skytteren.chart.scale.OutputRange
 import no.skytteren.chart.{Color, RGB}
-import org.scalatest.FunSpec
-import org.scalatest.Matchers._
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers._
 
-class InterpolateSpec extends FunSpec{
+class InterpolateSpec extends AnyFunSpec{
 
   describe("Interpolate number"){
     it("should interpolate") {

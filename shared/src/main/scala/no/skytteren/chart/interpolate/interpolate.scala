@@ -5,8 +5,6 @@ import no.skytteren.chart.interpolate.Interpolater.Factory
 import no.skytteren.chart.{Color, NumberData, RGB}
 import no.skytteren.chart.scale.{OutputRange, StartEndRange, StepsRange}
 
-import scala.language.higherKinds
-
 trait Interpolater[N]{
   def apply(value: Double): N
 
@@ -34,7 +32,7 @@ object Interpolater{
 }
 
 case class Stepsinterpolater[T](stepsRange: StepsRange[T])(implicit factory: Factory[T, StartEndRange]) extends Interpolater[T]{
-  val subranges = stepsRange.steps.sliding(2).map{case start :: end :: Nil => StartEndRange(start, end)}.map(factory).toList
+  val subranges = stepsRange.steps.sliding(2).collect{case start :: end :: Nil => StartEndRange(start, end)}.map(factory).toList
 
   override def apply(value: Double): T = {
     val i: Int = math.min((value * subranges.size).toInt, subranges.size - 1)

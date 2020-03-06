@@ -2,8 +2,7 @@ package no.skytteren.chart.scale
 
 import no.skytteren.chart.interpolate.Interpolater
 import no.skytteren.chart.{InputData, NumberData}
-
-import scala.language.higherKinds
+import Ordering.Double.TotalOrdering
 
 case class InputRange[N: InputData](start: N, end: N) {
   val n = implicitly[InputData[N]]
@@ -127,7 +126,7 @@ case class Log[D, G, O[A] <: OutputRange[A]](inputRange: InputRange[D],
 
     val reversed: Boolean = n(inputRange.start) > n(inputRange.end)
 
-    val result = Stream.from(0, 1).map(i => pow(i)).dropWhile(_ / start < 1).takeWhile(_ / end < base).map(n.reverse).toList
+    val result = LazyList.from(0, 1).map(i => pow(i)).dropWhile(_ / start < 1).takeWhile(_ / end < base).map(n.reverse).toList
     if (reversed) result.reverse else result
   }
 

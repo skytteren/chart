@@ -1,11 +1,11 @@
 package no.skytteren.chart.scale
 
-import no.skytteren.scalatime.{Date, Year, Month, DayOfMonth, DateTime}
-import org.scalatest._
-import org.scalatest.Matchers._
+import no.skytteren.scalatime.{Date, DateTime, DayOfMonth, Month, Year}
+import org.scalatest.matchers.should.Matchers._
 import _root_.no.skytteren.chart.{Color, RGB}
+import org.scalatest.funspec.AnyFunSpec
 
-class ScaleSpec extends FunSpec{
+class ScaleSpec extends AnyFunSpec{
 
   describe("scaleLinear"){
     it("should scale") {

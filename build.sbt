@@ -4,12 +4,12 @@ import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 enablePlugins(GitVersioning)
 enablePlugins(GitBranchPrompt)
 
-scalaVersion := "2.13.1"
+scalaVersion := "2.13.3"
 
 lazy val commonSettings: Seq[Def.Setting[_]] =
   Seq(
     organization         := "no.skytteren",
-    scalaVersion         := "2.13.1",
+    scalaVersion         := "2.13.3",
     scalacOptions       ++= Seq("-encoding", "UTF-8", "-feature", "-unchecked", "-Xlint", "-deprecation"),
     fork in run          := true,
     cancelable in Global := true,
@@ -22,7 +22,7 @@ lazy val chart = crossProject(JSPlatform, JVMPlatform)
   .settings(
     libraryDependencies += "com.lihaoyi" %%% "scalatags" % "0.8.6",
     libraryDependencies += "org.scalatest" %%% "scalatest" % "3.1.1" % "test",
-    libraryDependencies += "no.skytteren" %%% "scalatime" % "0900ddf1c8ebbe6a491da3e016245703db32faf6",
+    libraryDependencies += "no.skytteren" %%% "scalatime" % "07458a6bfc13726416e0912b87c37067a5ce3db5",
   )
 
 lazy val chartJvm = chart.jvm

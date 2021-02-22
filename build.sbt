@@ -4,7 +4,7 @@ import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 enablePlugins(GitVersioning)
 enablePlugins(GitBranchPrompt)
 
-scalaVersion := "2.13.3"
+scalaVersion := "2.13.4"
 
 lazy val commonSettings: Seq[Def.Setting[_]] =
   Seq(
@@ -20,8 +20,8 @@ lazy val chart = crossProject(JSPlatform, JVMPlatform)
   .in(file("."))
   .settings(commonSettings :_*)
   .settings(
-    libraryDependencies += "com.lihaoyi" %%% "scalatags" % "0.8.6",
-    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.1.1" % "test",
+    libraryDependencies += "com.lihaoyi" %%% "scalatags" % "0.9.3",
+    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.2" % "test",
     libraryDependencies += "no.skytteren" %%% "scalatime" % "07458a6bfc13726416e0912b87c37067a5ce3db5",
   )
 
@@ -32,8 +32,8 @@ lazy val server = project
   .dependsOn(chartJvm)
   .settings(commonSettings :_*)
   .settings(
-    libraryDependencies += "com.typesafe.akka" %% "akka-http" % "10.1.11",
-    libraryDependencies += "com.typesafe.akka" %% "akka-stream" % "2.6.3",
+    libraryDependencies += "com.typesafe.akka" %% "akka-http" % "10.2.3",
+    libraryDependencies += "com.typesafe.akka" %% "akka-stream" % "2.6.12",
   )
 
 lazy val root = project

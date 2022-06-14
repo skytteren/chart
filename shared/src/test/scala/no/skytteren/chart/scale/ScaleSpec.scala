@@ -152,7 +152,7 @@ class ScaleSpec extends AnyFunSpec{
       val ints = Log(InputRange(1, 32), OutputRange(0d, 1d), base = 2)
       assert(ints.ticks() === List(1, 2, 4, 8, 16, 32))
       val e = Log(InputRange(1.0, 32.0), OutputRange(0d, 1d), base = Math.E)
-      assert(e.ticks().map(_.formatted("%.3f")).map(i => i.substring(0, math.min(i.length, 6))) === List("1.000", "2.718", "7.389", "20.086", "54.598"))
+      assert(e.ticks().map("%.3f" format _ ).map(i => i.substring(0, math.min(i.length, 6))) === List("1.000", "2.718", "7.389", "20.086", "54.598"))
     }
 
   }

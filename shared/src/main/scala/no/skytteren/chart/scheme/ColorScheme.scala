@@ -4,11 +4,10 @@ import no.skytteren.chart.RGB
 import no.skytteren.chart.Color._
 
 
-object ColorScheme {
+object ColorScheme:
 
-  case class MaterialScheme(`50`: RGB, `100`: RGB, `200`: RGB, `300`: RGB, `400`: RGB, `500`: RGB, `600`: RGB, `700`: RGB, `800`: RGB, `900`: RGB){
+  case class MaterialScheme(`50`: RGB, `100`: RGB, `200`: RGB, `300`: RGB, `400`: RGB, `500`: RGB, `600`: RGB, `700`: RGB, `800`: RGB, `900`: RGB):
     val all = List(`50`, `100`, `200`, `300`, `400`, `500`, `600`, `700`, `800`, `900`)
-  }
 
   val red = MaterialScheme(
     hex("FFEBEE"), hex("FFCDD2"), hex("EF9A9A"), hex("E57373"), hex("EF5350"), hex("F44336"), hex("E53935"), hex("D32F2F"), hex("C62828"), hex("B71C1C")
@@ -94,4 +93,3 @@ object ColorScheme {
   val `800`: List[RGB] = all.map(_.`800`)
   val `900`: List[RGB] = all.map(_.`900`)
 
-}

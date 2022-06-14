@@ -1,25 +1,21 @@
 package no.skytteren.chart
 
-trait LineChartInfo[-T] {
+trait LineChartInfo[-T]:
 
   def list(data: T): Seq[(String, Seq[(Double, Double)])]
 
-}
 
-object LineChartInfo{
+object LineChartInfo:
   implicit def stringNumberNumberLineChartInfo[A: Numeric, B: Numeric]: LineChartInfo[(String, Seq[(A, B)])] = new LineChartInfo[(String, Seq[(A, B)])]{
     val numericA = implicitly[Numeric[A]]
     val numericB = implicitly[Numeric[B]]
-    override def list(data: (String, Seq[(A, B)])): Seq[(String, Seq[(Double, Double)])] = {
+    override def list(data: (String, Seq[(A, B)])): Seq[(String, Seq[(Double, Double)])] =
       List(data._1 -> data._2.map{case (a, b) => numericA.toDouble(a) -> numericB.toDouble(b)})
-    }
   }
 
   implicit def listStringNumberNumberLineChartInfo[A: Numeric, B: Numeric]: LineChartInfo[Seq[(String, Seq[(A, B)])]] = new LineChartInfo[Seq[(String, Seq[(A, B)])]]{
     val itemMapper = stringNumberNumberLineChartInfo[A, B]
-    override def list(data: Seq[(String, Seq[(A, B)])]): Seq[(String, Seq[(Double, Double)])] = {
+    override def list(data: Seq[(String, Seq[(A, B)])]): Seq[(String, Seq[(Double, Double)])] =
       data.flatMap(itemMapper.list)
-    }
   }
 
-}
